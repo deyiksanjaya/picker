@@ -1,0 +1,549 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Random Picker</title>
+    <style>
+        body {
+    background-image: url('https://i.ibb.co/7yh2G8z/imresizer-1713227463236.jpg');
+    background-size: cover; /* Cover the entire viewport */
+    background-repeat: no-repeat; /* Do not repeat the background image */
+    background-position: center; /* Center the background image */
+    font-family: sans-serif; /* Use sans-serif font */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    display: flex; /* Use flexbox for layout */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    min-height: 100vh; /* Minimum height of viewport */
+    touch-action: manipulation;
+    user-select: none;
+    -ms-content-zooming: none;
+    -ms-touch-action: manipulation;
+    zoom: reset;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+/* Disable zooming on mobile devices */
+@media (max-width: 767px) {
+    body {
+        touch-action: pan-x pan-y;
+        -ms-touch-action: pan-x pan-y;
+        -ms-content-zooming: none;
+        -ms-user-zoom: none;
+        overflow: hidden;
+    }
+}
+
+    .loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.8); /* Fallback for Safari */
+    backdrop-filter: blur(10px); /* Blur effect */
+}
+
+.loading-content {
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+
+        .container {
+    max-width: 400px;
+    margin: 20px;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    height: auto; /* Fixed height */
+    overflow: hidden; /* Hide overflowing content */
+}
+
+#inputList {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+    text-align: center; 
+}
+
+
+        @media only screen and (max-width: 600px) {
+    .container {
+        height: auto; /* Allow container to grow vertically */
+    }
+
+    #output {
+        height: auto; /* Allow output div to grow vertically */
+    }
+}
+
+        button {
+            padding: 12px 30px;
+            background-color: #388e3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        button:hover {
+            background-color: #2e7d32;
+        }
+
+        #output {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .slot {
+            display: inline-block;
+            width: 100%;
+            animation: slotAnimation 2s infinite linear;
+            overflow: hidden; /* Hide overflowing content */
+            white-space: nowrap; /* Prevent wrapping */
+        }
+
+        @keyframes slotAnimation {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-100%);
+            }
+        }
+
+        /* Styling for template buttons */
+        .button {
+            padding: 8px 20px;
+            margin: 5px;
+            background-color: #fff;
+            color: #000;
+            border: 1px solid #000;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .button:hover {
+            background-color: #000;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="output" onclick="searchResult()"></div>
+        <textarea id="inputList" placeholder="Enter your list here" rows="4"></textarea>
+        <button id="randomizeButton" onclick="toggleAnimation()">Start</button>
+        <br></br>
+        <div id="buttons">
+            <button class="button" onclick="loadList('Playing Cards')">Playing Cards</button>
+            <button class="button" onclick="loadList('Movie Characters')">Movie Characters</button>
+            <button class="button" onclick="loadList('Famous Individuals')">Famous Individuals</button>
+        </div>
+        <div id="dialogBox" style="display: none;">
+        <input type="text" id="ntfyshInput" placeholder="Enter your ntfy.sh link">
+        <button onclick="saveNtfyshLink()">Save</button>
+    </div>
+  </div>
+
+  <script>
+    // Function to parse URL parameters
+    function getUrlParameter(name) {
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(window.location.href);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    // Get the endpoint parameter from the URL
+    var endpoint = getUrlParameter('endpoint');
+
+    // If endpoint parameter exists, use it; otherwise, use default value
+    var ntfyshEndpoint = endpoint ? endpoint : "mypeek";
+
+    // Update all endpoint links in the code
+    function updateEndpointLinks() {
+        var endpointLinks = document.querySelectorAll('.endpoint-link');
+
+        endpointLinks.forEach(function (link) {
+            link.href = 'https://ntfy.sh/' + ntfyshEndpoint;
+        });
+    }
+
+    // Call the function to update endpoint links
+    updateEndpointLinks();
+
+    var nextItemDisplay; // Variable to hold the next item display element
+
+    function createNextItemDisplay() {
+        var container = document.querySelector('.container'); // Get the container element
+        nextItemDisplay = document.createElement("div");
+        nextItemDisplay.id = "nextItemDisplay";
+        nextItemDisplay.style.position = "absolute";
+        nextItemDisplay.style.bottom = "7px"; // Add bottom padding
+        nextItemDisplay.style.right = "10px"; // Add right padding
+        nextItemDisplay.style.backgroundColor = "transparent"; // Set background color to transparent
+        nextItemDisplay.style.padding = "5px"; // Add padding
+        nextItemDisplay.style.fontSize = "9px";
+        nextItemDisplay.textContent = "Randomizer v2.1.3"; // Set the text content
+        container.style.position = "relative"; // Ensure the container has a relative position
+        container.appendChild(nextItemDisplay); // Append to the container
+    }
+
+    function updateNextItemDisplay(text) {
+        if (!nextItemDisplay) {
+            createNextItemDisplay();
+        }
+        nextItemDisplay.textContent = text + " " + "v2.1.3";
+    }
+
+    let searchResultRunning = false;
+
+    function searchResult() {
+        // Check if searchResult function is already running
+        if (searchResultRunning) {
+            return;
+        }
+
+        searchResultRunning = true;
+
+        var resultText = document.getElementById("output").textContent.trim();
+        if (resultText !== "") {
+            // Reset the posted flag to allow posting again
+            searchResult.posted = false;
+
+            // Create the loading container
+            var loadingContainer = document.createElement("div");
+            loadingContainer.classList.add("loading-container"); // Add loading-container class
+
+            // Create and append the "Opening Wikipedia" text
+            var openingWikipediaText = document.createElement("div");
+            openingWikipediaText.textContent = "Searching Wikipedia for " + nextItem + "...";
+            openingWikipediaText.classList.add("loading-content"); // Add loading-content class
+
+            // Append the "Opening Wikipedia" text to the loading container
+            loadingContainer.appendChild(openingWikipediaText);
+
+            // Append the loading container to the document body
+            document.body.appendChild(loadingContainer);
+
+            // Attempt to fetch summary directly from Wikipedia
+            fetch('https://id.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(resultText))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.title && data.extract) {
+                        // Post to ntfy.sh/mypeek
+                        return fetch('https://ntfy.sh/' + ntfyshEndpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'text/plain'
+                            },
+                            body: `${data.title}\n\n${data.extract}`
+                        });
+                    } else {
+                        throw new Error('Summary not found');
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to post data to Ntfy.sh');
+                    }
+                    console.log('Data posted to Ntfy.sh successfully');
+                    searchResult.posted = true; // Set the posted flag to prevent posting again
+
+                    // Remove the loading container
+                    loadingContainer.remove();
+
+                    // Open the Wikipedia page after the search result is posted
+                    openWikipediaPage(resultText);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Post the resultText to ntfy.sh/mypeek
+                    const postData = `${resultText}\n\nDescription not found`;
+                    fetch('https://ntfy.sh/' + ntfyshEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        },
+                        body: postData
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to post data to Ntfy.sh');
+                            }
+                            console.log('Data posted to Ntfy.sh successfully');
+                        })
+                        .catch(error => {
+                            console.error('Error posting data to Ntfy.sh:', error);
+                        });
+
+                    // Update the loading message if summary is not found
+                    openingWikipediaText.textContent = `Wikipedia article not found. Searching Google for ${nextItem}...`;
+
+                    // Delay the Google search by one second
+                    setTimeout(() => {
+                        // Open a new tab with a Google Image search for the next item
+                        window.location.replace(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(nextItem)}`, '_blank');
+                    }, 1000);
+                })
+                .finally(() => {
+                    searchResultRunning = false; // Reset the searchResultRunning flag
+                });
+        }
+    }
+
+    // Function to determine the user's country code
+    function determineCountryCode() {
+        // Check if Geolocation is supported by the browser
+        if ("geolocation" in navigator) {
+            // Prompt the user for location permission
+            console.log("This page needs your location to determine the right Wikipedia page for you.");
+
+            // Use Geolocation API to get the user's position
+            navigator.geolocation.getCurrentPosition(function (position) {
+                // Retrieve latitude and longitude coordinates
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                // Use reverse geocoding to determine the country code based on coordinates
+                fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Log the country code to the console
+                        console.log("Country Code:", data.countryCode);
+
+                        // Once the country code is determined, proceed with opening the Wikipedia page
+                        openWikipediaPage(region, data.countryCode);
+                    })
+                    .catch(error => {
+                        console.error('Error determining country code:', error);
+                    });
+            }, function (error) {
+                console.error('Error getting user location:', error);
+            });
+        } else {
+            console.error('Geolocation is not supported by this browser.');
+        }
+    }
+
+    // Function to open Wikipedia page for the corresponding region
+    function openWikipediaPage(region, countryCode) {
+        // Map region names to Wikipedia page titles
+        const regionMap = {
+            "Playing Cards": "Playing_card",
+            "Movie Characters": "List_of_fictional_characters",
+            "Famous Individuals": "List_of_people"
+            // Add more regions and corresponding Wikipedia page titles as needed
+        };
+
+        // Map country codes to Wikipedia domains
+        const domainMap = {
+            "US": "en.wikipedia.org", // English (United States)
+            "GB": "en.wikipedia.org", // English (United Kingdom)
+            "CA": "en.wikipedia.org", // English (Canada)
+            "AU": "en.wikipedia.org", // English (Australia)
+            "IN": "en.wikipedia.org", // English (India)
+            "DE": "de.wikipedia.org", // German
+            "FR": "fr.wikipedia.org", // French
+            "ES": "es.wikipedia.org", // Spanish
+            "IT": "it.wikipedia.org", // Italian
+            "PT": "pt.wikipedia.org", // Portuguese
+            "NL": "nl.wikipedia.org", // Dutch
+            "RU": "ru.wikipedia.org", // Russian
+            "JP": "ja.wikipedia.org", // Japanese
+            "CN": "zh.wikipedia.org", // Chinese
+            "ID": "id.wikipedia.org"  // Indonesia
+            // Add more country codes and corresponding Wikipedia domains as needed
+        };
+
+        // Check if the region exists in the regionMap
+        if (regionMap.hasOwnProperty(region)) {
+            // Get the Wikipedia domain for the country
+            const wikipediaDomain = domainMap.hasOwnProperty(countryCode) ? domainMap[countryCode] : "en.wikipedia.org";
+
+            // Construct the Wikipedia URL for the corresponding region
+            var wikipediaURL = `https://${wikipediaDomain}/wiki/${regionMap[region]}`;
+
+            // Open the Wikipedia page in the same tab
+            window.location.replace(wikipediaURL);
+        } else {
+            // Redirect to Indonesian Wikipedia
+            window.location.replace(`https://id.wikipedia.org/wiki/${encodeURIComponent(nextItem)}`);
+        }
+    }
+
+    // Call the function to determine the user's country code and open the Wikipedia page
+    determineCountryCode();
+
+    // Initialize the posted flag
+    searchResult.posted = false;
+
+    var interval;
+    var items = [];
+    var currentIndex = 0;
+    var outputDiv = document.getElementById("output");
+    var nextItem;
+    var isAnimating = false;
+
+    // Set initial text for the output div
+
+    // Add event listener to outputDiv
+    outputDiv.addEventListener("click", searchResult);
+
+    function toggleAnimation() {
+        if (isAnimating) {
+            stopAnimation();
+        } else {
+            startAnimation();
+        }
+    }
+
+    function startAnimation() {
+        var inputList = document.getElementById("inputList").value.trim();
+        if (inputList === "") {
+            outputDiv.textContent = "Input your list first!";
+            return;
+        }
+
+        // Shuffle the input list
+        var shuffledList = shuffle(inputList.split('\n').map(item => item.trim()).filter(Boolean));
+
+        // Determine the result in the background
+        var result = determineResult();
+
+        // Show the result in the output div temporarily
+        outputDiv.textContent = result;
+
+        // Log the next item that will be displayed
+        items = shuffledList; // Use the shuffled list
+        var nextItemIndex = Math.floor(Math.random() * items.length);
+        nextItem = items[nextItemIndex];
+        console.log(nextItem);
+        updateNextItemDisplay(nextItem); // Update next item display
+
+        setTimeout(function () {
+            outputDiv.textContent = nextItem; // Display the next item initially
+        }, 1000);
+
+        currentIndex = 0;
+
+        isAnimating = true;
+        document.getElementById("randomizeButton").textContent = "Stop";
+
+        // Start the slot machine animation
+        interval = setInterval(animateSlot, 50); // Change the interval as needed
+    }
+
+    // Fisher-Yates shuffle algorithm
+    function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+
+        while (0 !== currentIndex) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+
+    function stopAnimation() {
+        clearInterval(interval);
+
+        isAnimating = false;
+        document.getElementById("randomizeButton").textContent = "Start";
+
+        // Reset text color to default
+        outputDiv.style.color = "#333";
+
+        // Display the final result
+        if (items.length > 0) {
+            outputDiv.textContent = nextItem; // Display the determined item
+            updateNextItemDisplay("Randomizer "); // Revert to initial text
+        }
+    }
+
+    // Function to determine the result (replace with your logic)
+    function determineResult() {
+        // Simulating determination of result
+        return "Determined Result";
+    }
+
+    function animateSlot() {
+        outputDiv.innerHTML = ''; // Clear previous content
+
+        // Display items in a loop to create the slot machine effect
+        for (var i = 0; i < items.length; i++) {
+            var slotItem = document.createElement("div");
+            slotItem.textContent = items[(currentIndex + i) % items.length];
+            slotItem.className = "slot";
+            outputDiv.appendChild(slotItem);
+        }
+
+        currentIndex++;
+
+        if (currentIndex >= items.length) {
+            currentIndex = 0;
+        }
+    }
+
+    function loadList(type) {
+    var list;
+    switch(type) {
+        case 'Playing Cards':
+            list = "3 of Diamonds\n8 of Hearts\nJack of Spades\nAce of Clubs\n6 of Diamonds\nKing of Hearts\n10 of Clubs\n9 of Diamonds\n4 of Spades\n7 of Diamonds\n6 of Hearts\n9 of Spades\n8 of Clubs\n4 of Diamonds\nJack of Hearts\nAce of Diamonds\n10 of Diamonds\n7 of Spades\n3 of Clubs\n5 of Hearts\n2 of Spades\n5 of Diamonds\n2 of Clubs\nQueen of Diamonds\n3 of Hearts\n9 of Clubs\nQueen of Hearts\n6 of Spades\n7 of Hearts\n5 of Spades\nKing of Spades\n4 of Hearts\n2 of Diamonds\nKing of Diamonds\nJack of Diamonds\nQueen of Clubs\n10 of Hearts\n8 of Spades\nAce of Hearts\n3 of Spades\n6 of Clubs\n9 of Hearts\n7 of Clubs\n2 of Hearts\n4 of Clubs\n10 of Spades\nJack of Clubs\n5 of Clubs\nQueen of Spades\nKing of Clubs\nAce of Spades";
+            break;
+        case 'Movie Characters':
+            list = "Luke Skywalker\nIndiana Jones\nJames Bond\nHermione Granger\nFrodo Baggins\nTony Stark\nEllen Ripley\nRocky Balboa\nThe Terminator\nDarth Vader\nHarry Potter\nKatniss Everdeen\nNeo\nForrest Gump\nElliot\nE.T.\nMarty McFly\nDoc Brown\nHan Solo\nPrincess Leia\nJack Sparrow\nBatman\nSuperman\nWonder Woman\nSpider-Man\nIron Man\nCaptain America\nThor\nBlack Widow\nHulk\nWolverine\nGandalf\nAragorn\nLegolas\nBilbo Baggins\nGollum\nSauron\nSamwise Gamgee\nGimli\nRon Weasley\nAlbus Dumbledore\nSeverus Snape\nVoldemort\nHagrid\nBella Swan\nEdward Cullen\nJacob Black\nPeeta Mellark\nGale Hawthorne\nThorin Oakenshield\nSmaug\nTauriel\nBoromir\nFaramir\nDenethor\nEowyn\nSaruman";
+            break;
+        case 'Famous Individuals':
+            list = "Beyoncé\nTaylor Swift\nDwayne Johnson\nScarlett Johansson\nAdele\nChris Hemsworth\nJennifer Lawrence\nBruno Mars\nGal Gadot\nRihanna\nTom Holland\nEmma Stone\nJustin Bieber\nMargot Robbie\nEd Sheeran\nRyan Reynolds\nLady Gaga\nChris Evans\nEmma Watson\nShawn Mendes\nZendaya\nRobert Downey Jr.\nAriana Grande\nLeonardo DiCaprio\nSelena Gomez\nTom Hanks\nJennifer Lopez\nWill Smith\nAngelina Jolie\nDrake\nJohnny Depp\nMiley Cyrus\nHugh Jackman\nGigi Hadid\nAdam Sandler\nKaty Perry\nChris Pratt\nCharlize Theron\nNick Jonas\nBlake Lively\nChris Pine\nAnne Hathaway\nKeanu Reeves\nEllie Goulding\nKit Harington\nSophie Turner\nZac Efron\nJennifer Aniston\nZoe Saldana\nMatthew McConaughey\nJennifer Garner\nMichael B. Jordan\nHalle Berry\nPaul Rudd\nKate Winslet\nJason Momoa\nEmily Blunt\nJake Gyllenhaal\nNatalie Portman\nJohn Krasinski\nEmma Roberts\nChadwick Boseman\nSandra Bullock\nMatthew Perry\nAnne-Marie\nMichael Fassbender\nViola Davis\nIdris Elba\nNicole Kidman\nRami Malek\nEmily Ratajkowski\nBrad Pitt\nAlicia Keys\nJosh Gad\nKate Hudson\nJosh Duhamel\nRita Ora\nDaniel Craig\nReese Witherspoon\nEddie Redmayne\nOlivia Wilde\nDavid Beckham\nSophia Loren\nJames Franco\nKristen Bell\nJared Leto\nShay Mitchell\nDaniel Radcliffe\nCameron Diaz\nLiam Hemsworth\nLucy Liu\nJamie Foxx\nJessica Alba\nColin Farrell\nKate Beckinsale\nEva Mendes\nWill Ferrell\nLily Collins\nSam Smith\nMargaret Qualley\nNatalie Dormer\nKristen Stewart\nMegan Fox\nJoaquin Phoenix\nAnne Hathaway\nMila Kunis\nMatt Damon\nAmanda Seyfried\nPatrick Dempsey\nDemi Lovato\nKate Bosworth\nJoe Jonas\nOlivia Culpo\nHilary Duff\nMichael Fassbender\nMichelle Pfeiffer\nZoe Kravitz\nChris Brown\nEllen DeGeneres\nJoel Edgerton\nBlake Shelton\nRihanna\nJessica Chastain\nOprah Winfrey\nAlexander Skarsgård\nJohn Legend\nChristina Aguilera\nBrie Larson\nJulia Roberts\nJamie Dornan\nNaomi Campbell\nRicky Martin\nJulianne Moore\nTaylor Lautner\nCate Blanchett\nCara Delevingne\nGerard Butler\nEva Longoria\nJude Law\nGwen Stefani\nChanning Tatum\nRosie Huntington-Whiteley\nLizzo\nKourtney Kardashian\nEmily Osment\nHugh Grant\nMelissa McCarthy\nJavier Bardem\nDakota Johnson\nChloe Grace Moretz\nMark Wahlberg\nJessica Biel\nElle Fanning\nRussell Crowe\nRebel Wilson\nKate Upton\nKylie Jenner\nAmy Adams\nJamie Lee Curtis\nZendaya\nIsla Fisher\nNicolas Cage\nAmy Schumer\nVince Vaughn\nKristen Wiig\nKate Winslet\nJennifer Connelly\nJim Carrey\nCatherine Zeta-Jones\nTom Cruise\nSarah Jessica Parker\nTom Hardy\nMary-Kate Olsen\nAshley Olsen\nSean Penn\nNaomi Watts\nRyan Gosling\nPaul Walker\nJason Statham\nKerry Washington\nHenry Cavill\nLiam Neeson\nJulianne Hough\nVin Diesel\nHarrison Ford\nSarah Michelle Gellar\nTiffany Haddish\nTessa Thompson\nNicole Richie\nGigi Hadid\nChrissy Teigen\nMichelle Williams\nJessica Simpson\nJenna Dewan\nJosh Hutcherson\nJaden Smith\nSam Worthington\nMilla Jovovich\nKeira Knightley\nJohn Boyega\nDua Lipa\nAlicia Vikander\nJesse Eisenberg\nNatalie Portman\nMegan Thee Stallion\nFreddie Highmore\nEmma Roberts\nEmilia Clarke\nJamie Foxx\nJon Hamm\nAdam Levine\nKate Beckinsale\nKatie Holmes\nMichael Keaton\nKevin Hart\nJessica Lange\nLiam Payne\nRachel McAdams\nDemi Moore\nJoseph Gordon-Levitt\nBritney Spears\nAlicia Silverstone";            
+            break;
+        default:
+            list = "";
+    }
+        document.getElementById("inputList").value = list;
+    }
+    // Add this line at the end of your JavaScript code
+    updateNextItemDisplay("Randomizer");
+</script>
+</body>
+</html>
