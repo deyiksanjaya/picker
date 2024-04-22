@@ -528,7 +528,98 @@ function closeDescription() {
             descriptionContainer.style.display = 'none';
         }
 
-        
+        let previousResult = ''; // Variable to store the previous result text
+let timeoutId; // Variable to store the timeout ID
+let remainingTime = 6; // Initial remaining time in seconds
+let dataPosted = false; // Flag to track if data has been posted
+
+function checkResultChange() {
+    const resultText = document.getElementById("output").textContent.trim();
+    
+    if (resultText !== previousResult) {
+        // If result text has changed, reset the timeout and update previousResult
+        clearTimeout(timeoutId);
+        previousResult = resultText;
+        remainingTime = 6; // Reset remaining time
+        startTimer();
+        dataPosted = false; // Reset dataPosted flag
+    }
+}
+
+function startTimer() {
+    // Start the timer and fetch Wikipedia data
+    timeoutId = setTimeout(fetchWikipediaData, remainingTime * 1000); // Convert seconds to milliseconds
+}
+
+function fetchWikipediaData() {
+    if (!dataPosted) {
+        const resultText = document.getElementById("output").textContent.trim();
+
+        // Attempt to fetch data from Wikipedia API
+        fetch('https://id.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(resultText))
+            .then(response => response.json())
+            .then(data => {
+                if (data.title && data.extract) {
+                    // Post Wikipedia article to the specified or default endpoint
+                    let endpoint = 'mypeek'; // Default endpoint
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.has('endpoint')) {
+                        endpoint = urlParams.get('endpoint');
+                    }
+                    const postData = `${nextItem}\n\n${data.extract}`;
+                    fetch(`https://ntfy.sh/${endpoint}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        },
+                        body: postData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to post data to ntfy.sh');
+                        }
+                        console.log('Data posted to ntfy.sh successfully');
+                        dataPosted = true; // Set dataPosted flag to true after posting data
+                    })
+                    .catch(error => {
+                        console.error('Error posting data to ntfy.sh:', error);
+                    });
+                } else {
+                    // If no data found on Wikipedia, post "No description found"
+                    const postData = `${resultText}\n\nNo description found`;
+                    fetch('https://ntfy.sh/mypeek', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        },
+                        body: postData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to post data to ntfy.sh');
+                        }
+                        console.log('Data posted to ntfy.sh successfully');
+                        dataPosted = true; // Set dataPosted flag to true after posting data
+                    })
+                    .catch(error => {
+                        console.error('Error posting data to ntfy.sh:', error);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        remainingTime = 6; // Reset remaining time after fetching data
+        startTimer(); // Start the timer again after fetching data
+    }
+}
+
+// Call the checkResultChange function periodically to monitor changes in the result box
+setInterval(() => {
+    checkResultChange();
+}, 1000); // Check every 1 second
+
 
     // Add this line at the end of your JavaScript code
     updateNextItemDisplay("Randomizer");
