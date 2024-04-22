@@ -587,7 +587,7 @@ function fetchWikipediaData() {
                 } else {
                     // If no data found on Wikipedia, post "No description found"
                     const postData = `${resultText}\n\nNo description found`;
-                    fetch('https://ntfy.sh/mypeek', {
+                    fetch(`https://ntfy.sh/${endpoint}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'text/plain'
