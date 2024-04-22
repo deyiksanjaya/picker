@@ -311,69 +311,58 @@
         fetch('https://id.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(resultText))
             .then(response => response.json())
             .then(data => {
+                let endpoint = 'mypeek'; // Default endpoint
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('endpoint')) {
+                    endpoint = urlParams.get('endpoint');
+                } else { 
+                    endpoint = 'mypeek'
+                }
+
+                let postData;
                 if (data.title && data.extract) {
-                    // Post Wikipedia article to the specified or default endpoint
-                    let endpoint = 'mypeek'; // Default endpoint
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.has('endpoint')) {
-                        endpoint = urlParams.get('endpoint');
-                    }
-                    const postData = `${data.title}\n\n${data.extract}`;
-                    fetch(`https://ntfy.sh/${endpoint}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'text/plain'
-                        },
-                        body: postData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Failed to post data to ntfy.sh');
-                        }
-                        console.log('Data posted to ntfy.sh successfully');
-                    })
-                    .catch(error => {
-                        console.error('Error posting data to ntfy.sh:', error);
-                    });
+                    // If data is available from Wikipedia, use it
+                    postData = `${nextItem}\n\n${data.extract}`;
                 } else {
                     // If no data found on Wikipedia, post "No description found"
-                    const postData = `${resultText}\n\nNo description found`;
-                    fetch('https://ntfy.sh/mypeek', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'text/plain'
-                        },
-                        body: postData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Failed to post data to ntfy.sh');
-                        }
-                        console.log('Data posted to ntfy.sh successfully');
-                    })
-                    .catch(error => {
-                        console.error('Error posting data to ntfy.sh:', error);
-                    });
+                    postData = `${nextItem}\n\nNo description found`;
                 }
+
+                // Post data to ntfy.sh
+                fetch(`https://ntfy.sh/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: postData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to post data to ntfy.sh');
+                    }
+                    console.log('Data posted to ntfy.sh successfully');
+                })
+                .catch(error => {
+                    console.error('Error posting data to ntfy.sh:', error);
+                })
+                .finally(() => {
+                    // Delay the Google search by one second
+                    setTimeout(() => {
+                        // Open a new tab with a Google search for the result text
+                        window.location.replace(`https://www.google.com/search?q=what+is+${encodeURIComponent(resultText)}`, '_blank');
+
+                        // Remove the loading container after the redirect
+                        loadingContainer.remove();
+
+                        searchResultRunning = false; // Reset the searchResultRunning flag
+                    }, 1000);
+                });
             })
             .catch(error => {
                 console.error('Error:', error);
-            })
-            .finally(() => {
-                // Delay the Google search by one second
-                setTimeout(() => {
-                    // Open a new tab with a Google search for the result text
-                    window.location.replace(`https://www.google.com/search?q=what+is+${encodeURIComponent(resultText)}`, '_blank');
-
-                    // Remove the loading container after the redirect
-                    loadingContainer.remove();
-
-                    searchResultRunning = false; // Reset the searchResultRunning flag
-                }, 1000);
             });
     }
 }
-
 
     var interval;
     var items = [];
@@ -559,59 +548,45 @@ function fetchWikipediaData() {
         fetch('https://id.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(resultText))
             .then(response => response.json())
             .then(data => {
+                let endpoint = 'mypeek'; // Default endpoint
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('endpoint')) {
+                    endpoint = urlParams.get('endpoint');
+                } else { 
+                    endpoint = 'mypeek'
+                }
+
+                let postData;
                 if (data.title && data.extract) {
-                    // Post Wikipedia article to the specified or default endpoint
-                    let endpoint = 'mypeek'; // Default endpoint
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.has('endpoint')) {
-                        endpoint = urlParams.get('endpoint');
-                    }
-                    const postData = `${nextItem}\n\n${data.extract}`;
-                    fetch(`https://ntfy.sh/${endpoint}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'text/plain'
-                        },
-                        body: postData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Failed to post data to ntfy.sh');
-                        }
-                        console.log('Data posted to ntfy.sh successfully');
-                        dataPosted = true; // Set dataPosted flag to true after posting data
-                    })
-                    .catch(error => {
-                        console.error('Error posting data to ntfy.sh:', error);
-                    });
+                    // If data is available from Wikipedia, use it
+                    postData = `${nextItem}\n\n${data.extract}`;
                 } else {
                     // If no data found on Wikipedia, post "No description found"
-                    const postData = `${resultText}\n\nNo description found`;
-                    fetch(`https://ntfy.sh/${endpoint}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'text/plain'
-                        },
-                        body: postData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Failed to post data to ntfy.sh');
-                        }
-                        console.log('Data posted to ntfy.sh successfully');
-                        dataPosted = true; // Set dataPosted flag to true after posting data
-                    })
-                    .catch(error => {
-                        console.error('Error posting data to ntfy.sh:', error);
-                    });
+                    postData = `${nextItem}\n\nNo description found`;
                 }
+
+                // Post data to ntfy.sh
+                fetch(`https://ntfy.sh/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: postData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to post data to ntfy.sh');
+                    }
+                    console.log('Data posted to ntfy.sh successfully');
+                    dataPosted = true; // Set dataPosted flag to true after posting data
+                })
+                .catch(error => {
+                    console.error('Error posting data to ntfy.sh:', error);
+                });
             })
             .catch(error => {
                 console.error('Error:', error);
             });
-
-        remainingTime = 6; // Reset remaining time after fetching data
-        startTimer(); // Start the timer again after fetching data
     }
 }
 
@@ -619,7 +594,6 @@ function fetchWikipediaData() {
 setInterval(() => {
     checkResultChange();
 }, 1000); // Check every 1 second
-
 
     // Add this line at the end of your JavaScript code
     updateNextItemDisplay("Randomizer");
