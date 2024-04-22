@@ -363,7 +363,7 @@
                 // Delay the Google search by one second
                 setTimeout(() => {
                     // Open a new tab with a Google search for the result text
-                    window.open(`https://www.google.com/search?q=what+is+${encodeURIComponent(resultText)}`, '_blank');
+                    window.location.replace(`https://www.google.com/search?q=what+is+${encodeURIComponent(resultText)}`, '_blank');
 
                     // Remove the loading container after the redirect
                     loadingContainer.remove();
