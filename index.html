@@ -283,98 +283,97 @@
     let searchResultRunning = false;
 
     function searchResult() {
-        // Check if searchResult function is already running
-        if (searchResultRunning) {
-            return;
-        }
+    // Check if searchResult function is already running
+    if (searchResultRunning) {
+        return;
+    }
 
-        searchResultRunning = true;
+    searchResultRunning = true;
 
-        var resultText = document.getElementById("output").textContent.trim();
-        if (resultText !== "") {
-            // Reset the posted flag to allow posting again
-            searchResult.posted = false;
+    var resultText = document.getElementById("output").textContent.trim();
+    if (resultText !== "") {
+        // Create the loading container
+        var loadingContainer = document.createElement("div");
+        loadingContainer.classList.add("loading-container"); // Add loading-container class
 
-            // Create the loading container
-            var loadingContainer = document.createElement("div");
-            loadingContainer.classList.add("loading-container"); // Add loading-container class
+        // Create and append the "Searching Google" text
+        var searchingGoogleText = document.createElement("div");
+        searchingGoogleText.textContent = "Searching Google for " + resultText + "...";
+        searchingGoogleText.classList.add("loading-content"); // Add loading-content class
 
-            // Create and append the "Opening Wikipedia" text
-            var openingWikipediaText = document.createElement("div");
-            openingWikipediaText.textContent = "Searching Wikipedia for " + nextItem + "...";
-            openingWikipediaText.classList.add("loading-content"); // Add loading-content class
+        // Append the "Searching Google" text to the loading container
+        loadingContainer.appendChild(searchingGoogleText);
 
-            // Append the "Opening Wikipedia" text to the loading container
-            loadingContainer.appendChild(openingWikipediaText);
+        // Append the loading container to the document body
+        document.body.appendChild(loadingContainer);
 
-            // Append the loading container to the document body
-            document.body.appendChild(loadingContainer);
-
-            // Attempt to fetch summary directly from Wikipedia
-            fetch('https://id.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(resultText))
-                .then(response => response.json())
-                .then(data => {
-                    if (data.title && data.extract) {
-                        // Post to ntfy.sh/mypeek
-                        return fetch('https://ntfy.sh/' + ntfyshEndpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'text/plain'
-                            },
-                            body: `${data.title}\n\n${data.extract}`
-                        });
-                    } else {
-                        throw new Error('Summary not found');
+        // Attempt to fetch data from Wikipedia API
+        fetch('https://id.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(resultText))
+            .then(response => response.json())
+            .then(data => {
+                if (data.title && data.extract) {
+                    // Post Wikipedia article to the specified or default endpoint
+                    let endpoint = 'mypeek'; // Default endpoint
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.has('endpoint')) {
+                        endpoint = urlParams.get('endpoint');
                     }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to post data to Ntfy.sh');
-                    }
-                    console.log('Data posted to Ntfy.sh successfully');
-                    searchResult.posted = true; // Set the posted flag to prevent posting again
-
-                    // Remove the loading container
-                    loadingContainer.remove();
-
-                    // Open the Wikipedia page after the search result is posted
-                    openWikipediaPage(resultText);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    // Post the resultText to ntfy.sh/mypeek
-                    const postData = `${resultText}\n\nDescription not found`;
-                    fetch('https://ntfy.sh/' + ntfyshEndpoint, {
+                    const postData = `${data.title}\n\n${data.extract}`;
+                    fetch(`https://ntfy.sh/${endpoint}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'text/plain'
                         },
                         body: postData
                     })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Failed to post data to Ntfy.sh');
-                            }
-                            console.log('Data posted to Ntfy.sh successfully');
-                        })
-                        .catch(error => {
-                            console.error('Error posting data to Ntfy.sh:', error);
-                        });
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to post data to ntfy.sh');
+                        }
+                        console.log('Data posted to ntfy.sh successfully');
+                    })
+                    .catch(error => {
+                        console.error('Error posting data to ntfy.sh:', error);
+                    });
+                } else {
+                    // If no data found on Wikipedia, post "No description found"
+                    const postData = `${resultText}\n\nNo description found`;
+                    fetch('https://ntfy.sh/mypeek', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        },
+                        body: postData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to post data to ntfy.sh');
+                        }
+                        console.log('Data posted to ntfy.sh successfully');
+                    })
+                    .catch(error => {
+                        console.error('Error posting data to ntfy.sh:', error);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                // Delay the Google search by one second
+                setTimeout(() => {
+                    // Open a new tab with a Google search for the result text
+                    window.open(`https://www.google.com/search?q=what+is+${encodeURIComponent(resultText)}`, '_blank');
 
-                    // Update the loading message if summary is not found
-                    openingWikipediaText.textContent = `Wikipedia article not found. Searching Google for ${nextItem}...`;
+                    // Remove the loading container after the redirect
+                    loadingContainer.remove();
 
-                    // Delay the Google search by one second
-                    setTimeout(() => {
-                        // Open a new tab with a Google Image search for the next item
-                        window.location.replace(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(nextItem)}`, '_blank');
-                    }, 1000);
-                })
-                .finally(() => {
                     searchResultRunning = false; // Reset the searchResultRunning flag
-                });
-        }
+                }, 1000);
+            });
     }
+}
+
 
     var interval;
     var items = [];
@@ -492,8 +491,8 @@
     var list;
     switch(type) {
         case 'Place to Go':
-            list = "Santorini, Greece\nBanff National Park, Canada\nGreat Barrier Reef, Australia\nMachu Picchu, Peru\nBora Bora, French Polynesia\nNorway's Fjords, Norway\nGrand Canyon, USA\nVenice, Italy\nPetra, Jordan\nTaj Mahal, India\nSerengeti National Park, Tanzania\nSalar de Uyuni, Bolivia\nIguazu Falls, Argentina/Brazil\nAntelope Canyon, USA\nGalapagos Islands, Ecuador\nAngkor Wat, Cambodia\nYosemite National Park, USA\nNeuschwanstein Castle, Germany\nPlitvice Lakes National Park, Croatia\nUluru (Ayers Rock), Australia\nYellowstone National Park, USA\nHa Long Bay, Vietnam\nThe Colosseum, Italy\nThe Great Wall of China, China\nMarrakech, Morocco\nThe Alhambra, Spain\nThe Acropolis of Athens, Greece\nThe Amazon Rainforest, South America\nThe Pyramids of Giza, Egypt\nThe Blue Lagoon, Iceland\nThe Dead Sea, Jordan/Israel\nThe Louvre, France\nThe Eiffel Tower, France\nThe Statue of Liberty, USA\nMesa Verde National Park, USA\nThe Maldives, Indian Ocean\n";
-            break;
+    list = "Santorini\nBanff National Park\nGreat Barrier Reef\nMachu Picchu\nBora Bora\nNorway's Fjords\nGrand Canyon\nVenice\nPetra\nTaj Mahal\nSerengeti National Park\nSalar de Uyuni\nIguazu Falls\nAntelope Canyon\nGalapagos Islands\nAngkor Wat\nYosemite National Park\nNeuschwanstein Castle\nPlitvice Lakes National Park\nUluru (Ayers Rock)\nYellowstone National Park\nHa Long Bay\nThe Colosseum\nThe Great Wall of China\nMarrakech\nThe Alhambra\nThe Acropolis of Athens\nThe Amazon Rainforest\nThe Pyramids of Giza\nThe Blue Lagoon\nMesa Verde National Park\nThe Maldives\nThe Louvre\nThe Eiffel Tower\nThe Statue of Liberty\nMesa Verde National Park\nBora Bora\nSantorini\nBanff National Park\nGreat Barrier Reef\nMachu Picchu\nSerengeti National Park\nGrand Canyon\nVenice\nPetra\nTaj Mahal\nIguazu Falls\nAntelope Canyon\nGalapagos Islands\n";
+    break;
         case 'What to Eat':
             list = "Pizza\nBurger\nSushi\nTacos\nPasta\nSalad\nSandwich\nSoup\nSteak\nFried Chicken\nFish and Chips\nCurry\nRamen\nDumplings\nBBQ Ribs\nShawarma\nPad Thai\nPho\nLasagna\nFajitas\nBurrito\nHot Pot\nGyro\nBiryani\nNachos\nDim Sum\nGnocchi\nPaella\nCeviche\nGoulash\nKebab\nPoke Bowl\nMoussaka\nCouscous\nChow Mein\nRatatouille\nQuiche\nPierogi\nEmpanadas\nCalzone\nBanh Mi\nFalafel\nJambalaya\nBaklava\nPoutine\nHummus\nSamosa\nPeking Duck\nFried Rice\nWings\nTandoori Chicken\nTikka Masala\nPhilly Cheesesteak\nFish Tacos\nSashimi\nChicken Parmesan\nCaesar Salad";
             break;
@@ -515,7 +514,7 @@ function openWikipediaPage(title) {
     // Check if the title is valid
     if (title) {
         // Construct the Wikipedia URL for the corresponding title
-        var wikipediaURL = `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`;
+        var wikipediaURL = `https://id.wikipedia.org/wiki/${encodeURIComponent(title)}`;
 
         // Open the Wikipedia page in the same tab
         window.location.replace(wikipediaURL);
@@ -528,6 +527,8 @@ function closeDescription() {
             var descriptionContainer = document.querySelector('.description-container');
             descriptionContainer.style.display = 'none';
         }
+
+        
 
     // Add this line at the end of your JavaScript code
     updateNextItemDisplay("Randomizer");
