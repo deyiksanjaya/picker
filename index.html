@@ -159,6 +159,43 @@
             background-color: #000;
             color: #fff;
         }
+
+        /* Additional style for the description container */
+        .description-container {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            height: 400px;
+            width: 400px;
+            overflow: hidden;
+            position: fixed;
+            bottom: 40px; /* Adjust the distance from the bottom as needed */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999; /* Ensure it's above the main container */
+        }
+
+        /* Additional style for the site description */
+        .description {
+            font-size: 23px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .close-button {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+            font-size: 16px;
+            color: #ff0000;
+        }
+
     </style>
 </head>
 <body>
@@ -168,16 +205,25 @@
         <button id="randomizeButton" onclick="toggleAnimation()">Start</button>
         <br></br>
         <div id="buttons">
-            <button class="button" onclick="loadList('Playing Cards')">Playing Cards</button>
-            <button class="button" onclick="loadList('Movie Characters')">Movie Characters</button>
-            <button class="button" onclick="loadList('Famous Individuals')">Famous Individuals</button>
+            <button class="button" onclick="loadList('Place to Go')">Place to Go</button>
+            <button class="button" onclick="loadList('What to Eat')">What to Eat</button>
+            <button class="button" onclick="loadList('Activity to Do')">Activity to Do</button>
+            <button class="button" onclick="loadList('Games to Play')">Games to Play</button>
         </div>
-        <div id="dialogBox" style="display: none;">
-        <input type="text" id="ntfyshInput" placeholder="Enter your ntfy.sh link">
-        <button onclick="saveNtfyshLink()">Save</button>
     </div>
-  </div>
 
+    <!-- Description container at the bottom -->
+    <div class="description-container">
+        <!-- Site description -->
+        <div class="description">
+            <strong>PICKER</strong> is here to help you make decisions when you're unsure about what to pick. Whether it's choosing a place to visit, deciding on what to eat for your next meal, planning an activity for the day, or picking a fun game to play with friends, we've got you covered! Feel free to add your own custom options to personalize your decision-making process even further.
+        </div>
+
+        <!-- Close button -->
+        <svg class="close-button" onclick="closeDescription()" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.2253 4.81108C5.83477 4.42056 5.20161 4.42056 4.81108 4.81108C4.42056 5.20161 4.42056 5.83477 4.81108 6.2253L10.5858 12L4.81114 17.7747C4.42062 18.1652 4.42062 18.7984 4.81114 19.1889C5.20167 19.5794 5.83483 19.5794 6.22535 19.1889L12 13.4142L17.7747 19.1889C18.1652 19.5794 18.7984 19.5794 19.1889 19.1889C19.5794 18.7984 19.5794 18.1652 19.1889 17.7747L13.4142 12L19.189 6.2253C19.5795 5.83477 19.5795 5.20161 19.189 4.81108C18.7985 4.42056 18.1653 4.42056 17.7748 4.81108L12 10.5858L6.2253 4.81108Z" fill="currentColor"/>
+        </svg>
+    </div>
   <script>
     // Function to parse URL parameters
     function getUrlParameter(name) {
@@ -442,20 +488,23 @@
     function loadList(type) {
     var list;
     switch(type) {
-        case 'Playing Cards':
-            list = "3 of Diamonds\n8 of Hearts\nJack of Spades\nAce of Clubs\n6 of Diamonds\nKing of Hearts\n10 of Clubs\n9 of Diamonds\n4 of Spades\n7 of Diamonds\n6 of Hearts\n9 of Spades\n8 of Clubs\n4 of Diamonds\nJack of Hearts\nAce of Diamonds\n10 of Diamonds\n7 of Spades\n3 of Clubs\n5 of Hearts\n2 of Spades\n5 of Diamonds\n2 of Clubs\nQueen of Diamonds\n3 of Hearts\n9 of Clubs\nQueen of Hearts\n6 of Spades\n7 of Hearts\n5 of Spades\nKing of Spades\n4 of Hearts\n2 of Diamonds\nKing of Diamonds\nJack of Diamonds\nQueen of Clubs\n10 of Hearts\n8 of Spades\nAce of Hearts\n3 of Spades\n6 of Clubs\n9 of Hearts\n7 of Clubs\n2 of Hearts\n4 of Clubs\n10 of Spades\nJack of Clubs\n5 of Clubs\nQueen of Spades\nKing of Clubs\nAce of Spades";
+        case 'Place to Go':
+            list = "Santorini, Greece\nBanff National Park, Canada\nGreat Barrier Reef, Australia\nMachu Picchu, Peru\nBora Bora, French Polynesia\nNorway's Fjords, Norway\nGrand Canyon, USA\nVenice, Italy\nPetra, Jordan\nTaj Mahal, India\nSerengeti National Park, Tanzania\nSalar de Uyuni, Bolivia\nIguazu Falls, Argentina/Brazil\nAntelope Canyon, USA\nGalapagos Islands, Ecuador\nAngkor Wat, Cambodia\nYosemite National Park, USA\nNeuschwanstein Castle, Germany\nPlitvice Lakes National Park, Croatia\nUluru (Ayers Rock), Australia\nYellowstone National Park, USA\nHa Long Bay, Vietnam\nThe Colosseum, Italy\nThe Great Wall of China, China\nMarrakech, Morocco\nThe Alhambra, Spain\nThe Acropolis of Athens, Greece\nThe Amazon Rainforest, South America\nThe Pyramids of Giza, Egypt\nThe Blue Lagoon, Iceland\nThe Dead Sea, Jordan/Israel\nThe Louvre, France\nThe Eiffel Tower, France\nThe Statue of Liberty, USA\nMesa Verde National Park, USA\nThe Maldives, Indian Ocean\n";
             break;
-        case 'Movie Characters':
-            list = "Luke Skywalker\nIndiana Jones\nJames Bond\nHermione Granger\nFrodo Baggins\nTony Stark\nEllen Ripley\nRocky Balboa\nThe Terminator\nDarth Vader\nHarry Potter\nKatniss Everdeen\nNeo\nForrest Gump\nElliot\nE.T.\nMarty McFly\nDoc Brown\nHan Solo\nPrincess Leia\nJack Sparrow\nBatman\nSuperman\nWonder Woman\nSpider-Man\nIron Man\nCaptain America\nThor\nBlack Widow\nHulk\nWolverine\nGandalf\nAragorn\nLegolas\nBilbo Baggins\nGollum\nSauron\nSamwise Gamgee\nGimli\nRon Weasley\nAlbus Dumbledore\nSeverus Snape\nVoldemort\nHagrid\nBella Swan\nEdward Cullen\nJacob Black\nPeeta Mellark\nGale Hawthorne\nThorin Oakenshield\nSmaug\nTauriel\nBoromir\nFaramir\nDenethor\nEowyn\nSaruman";
+        case 'What to Eat':
+            list = "Pizza\nBurger\nSushi\nTacos\nPasta\nSalad\nSandwich\nSoup\nSteak\nFried Chicken\nFish and Chips\nCurry\nRamen\nDumplings\nBBQ Ribs\nShawarma\nPad Thai\nPho\nLasagna\nFajitas\nBurrito\nHot Pot\nGyro\nBiryani\nNachos\nDim Sum\nGnocchi\nPaella\nCeviche\nGoulash\nKebab\nPoke Bowl\nMoussaka\nCouscous\nChow Mein\nRatatouille\nQuiche\nPierogi\nEmpanadas\nCalzone\nBanh Mi\nFalafel\nJambalaya\nBaklava\nPoutine\nHummus\nSamosa\nPeking Duck\nFried Rice\nWings\nTandoori Chicken\nTikka Masala\nPhilly Cheesesteak\nFish Tacos\nSashimi\nChicken Parmesan\nCaesar Salad";
             break;
-            case 'Famous Individuals':
-            list = "Beyoncé\nTaylor Swift\nDwayne Johnson\nScarlett Johansson\nAdele\nChris Hemsworth\nJennifer Lawrence\nBruno Mars\nGal Gadot\nRihanna\nTom Holland\nEmma Stone\nJustin Bieber\nMargot Robbie\nEd Sheeran\nRyan Reynolds\nLady Gaga\nChris Evans\nEmma Watson\nShawn Mendes\nZendaya\nRobert Downey Jr.\nAriana Grande\nLeonardo DiCaprio\nSelena Gomez\nTom Hanks\nJennifer Lopez\nWill Smith\nAngelina Jolie\nDrake\nJohnny Depp\nMiley Cyrus\nHugh Jackman\nGigi Hadid\nAdam Sandler\nKaty Perry\nChris Pratt\nCharlize Theron\nNick Jonas\nBlake Lively\nAnne Hathaway\nKeanu Reeves\nEllie Goulding\nKit Harington\nSophie Turner\nZac Efron\nJennifer Aniston\nZoe Saldana\nMatthew McConaughey\nJennifer Garner\nMichael B. Jordan\nHalle Berry";
+        case 'Activity to Do':
+            list = "Hiking\nCamping\nSurfing\nSkiing\nSnorkeling\nScuba Diving\nSkydiving\nHot Air Ballooning\nRock Climbing\nBungee Jumping\nWhitewater Rafting\nZip Lining\nParagliding\nKayaking\nCanoeing\nCycling\nPhotography\nSightseeing\nWhale Watching\nHorseback Riding\nFishing\nGolfing\nWine Tasting\nCooking Class\nYoga Retreat\nSpa Day\nMeditation\nArt Class\nSalsa Dancing\nConcert\nTheater Show\nMuseum Visit\nHistorical Tour\nWinery Tour\nFood Tour\nBoat Cruise\nBeach Volleyball\nPicnic\nBarbecue\nStargazing\nCultural Festival\nStreet Market\nLocal Fair\nTheme Park\nWater Park\nAmusement Park\nGardening\nBird Watching\nReading\n";
+            break;
+        case 'Games to Play':
+            list = "Tag\nHide and Seek\nCapture the Flag\nRed Light, Green Light\nSimon Says\nDuck, Duck, Goose\nMusical Chairs\nTug of War\nThree-Legged Race\nEgg and Spoon Race\nSack Race\nMarco Polo\nDodgeball\nKickball\nUltimate Frisbee\nVolleyball\nSoccer\nBasketball\nTennis\nBadminton\nCroquet\nGolf\nBowling\nBilliards\nFoosball\nPing Pong\nCornhole\nHorseshoes\nBocce Ball\nRing Toss\nBean Bag Toss\nLawn Darts\nKanJam\nBowling\nMini Golf\nShuffleboard\nDarts\nFrisbee Golf\nHula Hooping\nJump Rope\nHopscotch\nTwister\nCharades\nPictionary\nTrivia\nBoard Games\nCard Games\nChess\nCheckers\nDominoes\nScrabble\nJenga\nConnect Four\nUno\n";
             break;
         default:
             list = "";
     }
-        document.getElementById("inputList").value = list;
-    }
+    document.getElementById("inputList").value = list;
+}
 
     // Function to open Wikipedia page for the corresponding region
 function openWikipediaPage(title) {
@@ -471,6 +520,10 @@ function openWikipediaPage(title) {
     }
 }
 
+function closeDescription() {
+            var descriptionContainer = document.querySelector('.description-container');
+            descriptionContainer.style.display = 'none';
+        }
 
     // Add this line at the end of your JavaScript code
     updateNextItemDisplay("Randomizer");
