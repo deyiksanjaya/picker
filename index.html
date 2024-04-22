@@ -327,92 +327,6 @@
         }
     }
 
-    // Function to determine the user's country code
-    function determineCountryCode() {
-        // Check if Geolocation is supported by the browser
-        if ("geolocation" in navigator) {
-            // Prompt the user for location permission
-            console.log("This page needs your location to determine the right Wikipedia page for you.");
-
-            // Use Geolocation API to get the user's position
-            navigator.geolocation.getCurrentPosition(function (position) {
-                // Retrieve latitude and longitude coordinates
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-
-                // Use reverse geocoding to determine the country code based on coordinates
-                fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Log the country code to the console
-                        console.log("Country Code:", data.countryCode);
-
-                        // Once the country code is determined, proceed with opening the Wikipedia page
-                        openWikipediaPage(region, data.countryCode);
-                    })
-                    .catch(error => {
-                        console.error('Error determining country code:', error);
-                    });
-            }, function (error) {
-                console.error('Error getting user location:', error);
-            });
-        } else {
-            console.error('Geolocation is not supported by this browser.');
-        }
-    }
-
-    // Function to open Wikipedia page for the corresponding region
-    function openWikipediaPage(region, countryCode) {
-        // Map region names to Wikipedia page titles
-        const regionMap = {
-            "Playing Cards": "Playing_card",
-            "Movie Characters": "List_of_fictional_characters",
-            "Famous Individuals": "List_of_people"
-            // Add more regions and corresponding Wikipedia page titles as needed
-        };
-
-        // Map country codes to Wikipedia domains
-        const domainMap = {
-            "US": "en.wikipedia.org", // English (United States)
-            "GB": "en.wikipedia.org", // English (United Kingdom)
-            "CA": "en.wikipedia.org", // English (Canada)
-            "AU": "en.wikipedia.org", // English (Australia)
-            "IN": "en.wikipedia.org", // English (India)
-            "DE": "de.wikipedia.org", // German
-            "FR": "fr.wikipedia.org", // French
-            "ES": "es.wikipedia.org", // Spanish
-            "IT": "it.wikipedia.org", // Italian
-            "PT": "pt.wikipedia.org", // Portuguese
-            "NL": "nl.wikipedia.org", // Dutch
-            "RU": "ru.wikipedia.org", // Russian
-            "JP": "ja.wikipedia.org", // Japanese
-            "CN": "zh.wikipedia.org", // Chinese
-            "ID": "id.wikipedia.org"  // Indonesia
-            // Add more country codes and corresponding Wikipedia domains as needed
-        };
-
-        // Check if the region exists in the regionMap
-        if (regionMap.hasOwnProperty(region)) {
-            // Get the Wikipedia domain for the country
-            const wikipediaDomain = domainMap.hasOwnProperty(countryCode) ? domainMap[countryCode] : "en.wikipedia.org";
-
-            // Construct the Wikipedia URL for the corresponding region
-            var wikipediaURL = `https://${wikipediaDomain}/wiki/${regionMap[region]}`;
-
-            // Open the Wikipedia page in the same tab
-            window.location.replace(wikipediaURL);
-        } else {
-            // Redirect to Indonesian Wikipedia
-            window.location.replace(`https://id.wikipedia.org/wiki/${encodeURIComponent(nextItem)}`);
-        }
-    }
-
-    // Call the function to determine the user's country code and open the Wikipedia page
-    determineCountryCode();
-
-    // Initialize the posted flag
-    searchResult.posted = false;
-
     var interval;
     var items = [];
     var currentIndex = 0;
@@ -534,14 +448,30 @@
         case 'Movie Characters':
             list = "Luke Skywalker\nIndiana Jones\nJames Bond\nHermione Granger\nFrodo Baggins\nTony Stark\nEllen Ripley\nRocky Balboa\nThe Terminator\nDarth Vader\nHarry Potter\nKatniss Everdeen\nNeo\nForrest Gump\nElliot\nE.T.\nMarty McFly\nDoc Brown\nHan Solo\nPrincess Leia\nJack Sparrow\nBatman\nSuperman\nWonder Woman\nSpider-Man\nIron Man\nCaptain America\nThor\nBlack Widow\nHulk\nWolverine\nGandalf\nAragorn\nLegolas\nBilbo Baggins\nGollum\nSauron\nSamwise Gamgee\nGimli\nRon Weasley\nAlbus Dumbledore\nSeverus Snape\nVoldemort\nHagrid\nBella Swan\nEdward Cullen\nJacob Black\nPeeta Mellark\nGale Hawthorne\nThorin Oakenshield\nSmaug\nTauriel\nBoromir\nFaramir\nDenethor\nEowyn\nSaruman";
             break;
-        case 'Famous Individuals':
-            list = "Beyoncé\nTaylor Swift\nDwayne Johnson\nScarlett Johansson\nAdele\nChris Hemsworth\nJennifer Lawrence\nBruno Mars\nGal Gadot\nRihanna\nTom Holland\nEmma Stone\nJustin Bieber\nMargot Robbie\nEd Sheeran\nRyan Reynolds\nLady Gaga\nChris Evans\nEmma Watson\nShawn Mendes\nZendaya\nRobert Downey Jr.\nAriana Grande\nLeonardo DiCaprio\nSelena Gomez\nTom Hanks\nJennifer Lopez\nWill Smith\nAngelina Jolie\nDrake\nJohnny Depp\nMiley Cyrus\nHugh Jackman\nGigi Hadid\nAdam Sandler\nKaty Perry\nChris Pratt\nCharlize Theron\nNick Jonas\nBlake Lively\nChris Pine\nAnne Hathaway\nKeanu Reeves\nEllie Goulding\nKit Harington\nSophie Turner\nZac Efron\nJennifer Aniston\nZoe Saldana\nMatthew McConaughey\nJennifer Garner\nMichael B. Jordan\nHalle Berry\nPaul Rudd\nKate Winslet\nJason Momoa\nEmily Blunt\nJake Gyllenhaal\nNatalie Portman\nJohn Krasinski\nEmma Roberts\nChadwick Boseman\nSandra Bullock\nMatthew Perry\nAnne-Marie\nMichael Fassbender\nViola Davis\nIdris Elba\nNicole Kidman\nRami Malek\nEmily Ratajkowski\nBrad Pitt\nAlicia Keys\nJosh Gad\nKate Hudson\nJosh Duhamel\nRita Ora\nDaniel Craig\nReese Witherspoon\nEddie Redmayne\nOlivia Wilde\nDavid Beckham\nSophia Loren\nJames Franco\nKristen Bell\nJared Leto\nShay Mitchell\nDaniel Radcliffe\nCameron Diaz\nLiam Hemsworth\nLucy Liu\nJamie Foxx\nJessica Alba\nColin Farrell\nKate Beckinsale\nEva Mendes\nWill Ferrell\nLily Collins\nSam Smith\nMargaret Qualley\nNatalie Dormer\nKristen Stewart\nMegan Fox\nJoaquin Phoenix\nAnne Hathaway\nMila Kunis\nMatt Damon\nAmanda Seyfried\nPatrick Dempsey\nDemi Lovato\nKate Bosworth\nJoe Jonas\nOlivia Culpo\nHilary Duff\nMichael Fassbender\nMichelle Pfeiffer\nZoe Kravitz\nChris Brown\nEllen DeGeneres\nJoel Edgerton\nBlake Shelton\nRihanna\nJessica Chastain\nOprah Winfrey\nAlexander Skarsgård\nJohn Legend\nChristina Aguilera\nBrie Larson\nJulia Roberts\nJamie Dornan\nNaomi Campbell\nRicky Martin\nJulianne Moore\nTaylor Lautner\nCate Blanchett\nCara Delevingne\nGerard Butler\nEva Longoria\nJude Law\nGwen Stefani\nChanning Tatum\nRosie Huntington-Whiteley\nLizzo\nKourtney Kardashian\nEmily Osment\nHugh Grant\nMelissa McCarthy\nJavier Bardem\nDakota Johnson\nChloe Grace Moretz\nMark Wahlberg\nJessica Biel\nElle Fanning\nRussell Crowe\nRebel Wilson\nKate Upton\nKylie Jenner\nAmy Adams\nJamie Lee Curtis\nZendaya\nIsla Fisher\nNicolas Cage\nAmy Schumer\nVince Vaughn\nKristen Wiig\nKate Winslet\nJennifer Connelly\nJim Carrey\nCatherine Zeta-Jones\nTom Cruise\nSarah Jessica Parker\nTom Hardy\nMary-Kate Olsen\nAshley Olsen\nSean Penn\nNaomi Watts\nRyan Gosling\nPaul Walker\nJason Statham\nKerry Washington\nHenry Cavill\nLiam Neeson\nJulianne Hough\nVin Diesel\nHarrison Ford\nSarah Michelle Gellar\nTiffany Haddish\nTessa Thompson\nNicole Richie\nGigi Hadid\nChrissy Teigen\nMichelle Williams\nJessica Simpson\nJenna Dewan\nJosh Hutcherson\nJaden Smith\nSam Worthington\nMilla Jovovich\nKeira Knightley\nJohn Boyega\nDua Lipa\nAlicia Vikander\nJesse Eisenberg\nNatalie Portman\nMegan Thee Stallion\nFreddie Highmore\nEmma Roberts\nEmilia Clarke\nJamie Foxx\nJon Hamm\nAdam Levine\nKate Beckinsale\nKatie Holmes\nMichael Keaton\nKevin Hart\nJessica Lange\nLiam Payne\nRachel McAdams\nDemi Moore\nJoseph Gordon-Levitt\nBritney Spears\nAlicia Silverstone";            
+            case 'Famous Individuals':
+            list = "(Beyoncé)\n(Taylor Swift)\n(Dwayne Johnson)\n(Scarlett Johansson)\n(Adele)\n(Chris Hemsworth)\n(Jennifer Lawrence)\n(Bruno Mars)\n(Gal Gadot)\n(Rihanna)\n(Tom Holland)\n(Emma Stone)\n(Justin Bieber)\n(Margot Robbie)\n(Ed Sheeran)\n(Ryan Reynolds)\n(Lady Gaga)\n(Chris Evans)\n(Emma Watson)\n(Shawn Mendes)\n(Zendaya)\n(Robert Downey Jr.)\n(Ariana Grande)\n(Leonardo DiCaprio)\n(Selena Gomez)\n(Tom Hanks)\n(Jennifer Lopez)\n(Will Smith)\n(Angelina Jolie)\n(Drake)\n(Johnny Depp)\n(Miley Cyrus)\n(Hugh Jackman)\n(Gigi Hadid)\n(Adam Sandler)\n(Katy Perry)\n(Chris Pratt)\n(Charlize Theron)\n(Nick Jonas)\n(Blake Lively)\n(Anne Hathaway)\n(Keanu Reeves)\n(Ellie Goulding)\n(Kit Harington)\n(Sophie Turner)\n(Zac Efron)\n(Jennifer Aniston)\n(Zoe Saldana)\n(Matthew McConaughey)\n(Jennifer Garner)\n(Michael B. Jordan)\n(Halle Berry)";
             break;
         default:
             list = "";
     }
         document.getElementById("inputList").value = list;
     }
+
+    // Function to open Wikipedia page for the corresponding region
+function openWikipediaPage(title) {
+    // Check if the title is valid
+    if (title) {
+        // Construct the Wikipedia URL for the corresponding title
+        var wikipediaURL = `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`;
+
+        // Open the Wikipedia page in the same tab
+        window.location.replace(wikipediaURL);
+    } else {
+        console.error('Invalid title provided');
+    }
+}
+
+
     // Add this line at the end of your JavaScript code
     updateNextItemDisplay("Randomizer");
 </script>
