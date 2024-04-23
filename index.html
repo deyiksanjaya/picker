@@ -58,16 +58,16 @@
 }
 
 
-        .container {
-    max-width: 400px;
-    margin: 20px;
+.container {
+    width: 400px; /* Set the width to a fixed value */
+    margin: 20px auto; /* Center the container horizontally with auto margins */
     padding: 30px;
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     text-align: center;
-    height: auto; /* Fixed height */
-    overflow: hidden; /* Hide overflowing content */
+    height: 300px;
+    overflow: hidden;
 }
 
 #inputList {
@@ -384,40 +384,40 @@
     }
 
     function startAnimation() {
-        var inputList = document.getElementById("inputList").value.trim();
-        if (inputList === "") {
-            outputDiv.textContent = "Input your list first!";
-            return;
-        }
-
-        // Shuffle the input list
-        var shuffledList = shuffle(inputList.split('\n').map(item => item.trim()).filter(Boolean));
-
-        // Determine the result in the background
-        var result = determineResult();
-
-        // Show the result in the output div temporarily
-        outputDiv.textContent = result;
-
-        // Log the next item that will be displayed
-        items = shuffledList; // Use the shuffled list
-        var nextItemIndex = Math.floor(Math.random() * items.length);
-        nextItem = items[nextItemIndex];
-        console.log(nextItem);
-        updateNextItemDisplay(nextItem); // Update next item display
-
-        setTimeout(function () {
-            outputDiv.textContent = nextItem; // Display the next item initially
-        }, 1000);
-
-        currentIndex = 0;
-
-        isAnimating = true;
-        document.getElementById("randomizeButton").textContent = "Stop";
-
-        // Start the slot machine animation
-        interval = setInterval(animateSlot, 50); // Change the interval as needed
+    var inputList = document.getElementById("inputList").value.trim();
+    if (inputList === "") {
+        outputDiv.textContent = "Input your list first!";
+        return;
     }
+
+    // Shuffle the input list
+    var shuffledList = shuffle(inputList.split('\n').map(item => item.trim()).filter(Boolean));
+
+    // Determine the result in the background
+    var result = determineResult();
+
+    // Show the result in the output div temporarily
+    outputDiv.textContent = result;
+
+    // Log the next item that will be displayed
+    items = shuffledList; // Use the shuffled list
+    var nextItemIndex = Math.floor(Math.random() * items.length);
+    nextItem = items[nextItemIndex];
+    console.log(nextItem);
+    updateNextItemDisplay(nextItem); // Update next item display
+
+    setTimeout(function () {
+        outputDiv.textContent = nextItem; // Display the next item initially
+    }, 1000);
+
+    currentIndex = 0;
+
+    isAnimating = true;
+    document.getElementById("randomizeButton").textContent = "Stop";
+
+    // Start the slot machine animation
+    interval = setInterval(animateSlot, 50); // Change the interval as needed
+}
 
     // Fisher-Yates shuffle algorithm
     function shuffle(array) {
