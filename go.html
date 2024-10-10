@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta content="blogger" name="generator">
+  <title>Picker</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Playfair+Display&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Basic Skin Styles -->
+ <style>
+    /* Randomizer Theme with Grey Palette */
+    html, body {
+        height: 100%; /* Ensure the body takes the full height */
+        margin: 0; /* Remove default margin */
+        font-family: 'Montserrat', sans-serif; /* Modern font */
+    }
+
+    body {
+        background-color: #1c1c1c; /* Dark grey background */
+        color: #e0e0e0; /* Light grey text for contrast */
+        display: flex;
+        flex-direction: column; /* Stack children vertically */
+    }
+
+    header {
+        background: linear-gradient(to right, #4a4a4a, #2b2b2b); /* Darker grey gradient */
+        color: #fff; /* White text */
+        padding: 20px 0;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Soft shadow */
+    }
+
+    header h1 {
+        font-size: 2.5em;
+        margin: 0;
+        font-family: 'Playfair Display', serif; /* Stylish font for the title */
+    }
+
+    main {
+        flex: 1; /* Allow main to grow and take available space */
+        margin: 30px; /* Adjust margins as needed */
+        padding: 20px; /* Space inside the main content */
+        padding-bottom: 60px; /* Ensure there's space for the footer */
+        background-color: rgba(255, 255, 255, 0.05); /* Very light grey background */
+        border-radius: 8px;
+        box-shadow: 0px 0px 25px rgba(100, 100, 100, 0.5); /* Bright shadow effect */
+        text-align: center;
+    }
+
+    h2 {
+        color: #b0b0b0; /* Medium grey for headings */
+        font-family: 'Playfair Display', serif; /* Stylish font for headings */
+    }
+
+    footer {
+        background-color: #2b2b2b; /* Dark footer background */
+        color: #e0e0e0; /* Light footer text color */
+        text-align: center; /* Centered text */
+        padding: 10px; /* Space inside the footer */
+        width: 100%; /* Full width */
+        font-size: 0.8em; /* Slightly larger footer text size */
+        position: relative; /* Relative positioning */
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5); /* Shadow above the footer */
+    }
+
+    .random-section {
+        margin-bottom: 20px;
+    }
+
+    .randomizer-box {
+        font-size: 28px; /* Larger font size for visibility */
+        padding: 15px; /* Increased padding */
+        background-color: #444; /* Darker background for boxes */
+        border-radius: 5px;
+        margin: 10px 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s, background-color 0.3s;
+        color: #e0e0e0; /* Light grey text for boxes */
+    }
+
+    .randomizer-box:hover {
+        transform: scale(1.05);
+        background-color: #555; /* Slightly lighter on hover */
+    }
+
+    button {
+        padding: 12px 24px;
+        background-color: #6c757d; /* Grey button background */
+        color: #FFFFFF; /* White text */
+        border: none;
+        cursor: pointer;
+        font-size: 20px; /* Increased font size */
+        border-radius: 5px;
+        margin: 5px;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    button:hover {
+        transform: scale(1.1);
+        background-color: #5a6268; /* Darker grey on hover */
+    }
+    
+    .disabled {
+        background-color: #aaa; /* Grey out the button */
+        cursor: not-allowed; /* Change cursor to indicate disabled */
+    }
+    /* Responsive Styles */
+    @media (max-width: 600px) {
+        main {
+            margin: 10px;
+            padding: 15px;
+        }
+        
+        header h1 {
+            font-size: 2em;
+        }
+
+        button {
+            font-size: 16px;
+        }
+    }
+</style>
+
+</head>
+
+<body>
+  <header>
+    <h1>Picker</h1>
+    <p>Help you decide</p>
+  </header>
+
+  <main>
+    <h2>Click "STOP" Kapan Saja!</h2>
+    <br>
+    
+    <div class='random-section'>
+      <h3>Hewan Peliharaan</h3>
+      <div class='randomizer-box' id='random-animal'>...</div>
+    </div>
+
+    <div class='random-section'>
+      <h3>Makanan Favoritmu</h3>
+      <div class='randomizer-box' id='random-food'>...</div>
+    </div>
+
+    <div class='random-section'>
+      <h3>Negara Impianmu</h3>
+      <div class='randomizer-box' id='random-country'>...</div>
+    </div>
+
+    <button id='randomizer-button' aria-label='Start or stop the randomizer' onclick='toggleRandomizer()'>Mulai</button>
+    <button id='reset-button' aria-label='Reset all random values' onclick='resetAll()'>Reset</button>
+    
+  </main>
+
+  <footer>
+    <p id='footer-text'>Website ini dibuat untuk undian dan game random karya <span id='footer-update'>PKT</span> Team.</p>
+  </footer>
+  <!-- JavaScript for Randomizers -->
+  <script>
+    let randomAnimalInterval, randomFoodInterval, randomCountryInterval;
+    let lastAnimal = '', lastFood = '', lastCountry = '';
+    let isFirstStop = true;
+    const animals = ["Anjing", "Burung", "Cicak", "Domba", "Elang", "Falcon", "Gajah", "Harimau", "Ikan", "Jerapah", "Kucing", "Landak", "Macan", "Naga", "Orangutan", "Pinguin", "Rusa", "Singa", "Tupai", "Ular"];
+    const foods = ["Ayam Penyet", "Bakso", "Canai", "Dadar Gulung", "Empek-Empek", "French Fries", "Gado-Gado", "Hati Sapi", "Ikan Bakar", "Kerak Telor", "Lalapan", "Mie Goreng", "Nasi Goreng", "Opak Gulung", "Rendang", "Sate", "Tempe", "Udang Goreng", "Vanilla Ice Cream",];
+    const countries = ["Australia", "Brazil", "China", "Denmark", "Egypt", "France", "Germany", "Haiti", "Indonesia", "Japan", "Kazakhstan", "Lebanon", "Malaysia", "Norway", "Oman", "Pakistan", "Qatar", "Russia", "Singapore", "Turkey", "United States", "Vietnam"];
+
+
+    // Function to generate random values
+    function generateRandomValues() {
+    lastAnimal = animals[Math.floor(Math.random() * animals.length)];
+    lastFood = foods[Math.floor(Math.random() * foods.length)];
+    lastCountry = countries[Math.floor(Math.random() * countries.length)];
+
+      // Update the footer with the generated values
+      updateFooter(lastAnimal, lastFood, lastCountry);
+
+    }
+
+    function displayRandomValues() {
+      document.getElementById("random-animal").innerHTML = lastAnimal;
+      document.getElementById("random-food").innerHTML = lastFood;
+      document.getElementById("random-country").innerHTML = lastCountry;
+    }
+
+    // Update footer with predetermined values
+    function updateFooter(animal, food, country) {
+      const footerUpdate = document.getElementById("footer-update");
+      footerUpdate.innerHTML = `${animal.charAt(0)}${food.charAt(0)}${country.charAt(0)}`;
+    }
+
+    // Reset the footer back to its initial state
+    function resetFooter() {
+      const footerUpdate = document.getElementById("footer-update");
+      footerUpdate.innerHTML = "PKT"; // Initial text
+    }
+
+    // Function to show the changing random values in animation
+    function getRandomValues() {
+      document.getElementById("random-animal").innerHTML = animals[Math.floor(Math.random() * animals.length)];
+      document.getElementById("random-food").innerHTML = foods[Math.floor(Math.random() * foods.length)];
+      document.getElementById("random-country").innerHTML = countries[Math.floor(Math.random() * countries.length)];
+    }
+
+    // Mulai or Berhenti
+    function toggleRandomizer() {
+    const button = document.getElementById("randomizer-button");
+
+    if (button.innerHTML === "Mulai") {
+        button.innerHTML = "Berhenti";
+
+        // Generate random values at the start
+        generateRandomValues();
+        displayRandomValues();
+
+        // Start randomization for each category
+        randomAnimalInterval = setInterval(() => {
+            document.getElementById("random-animal").innerHTML = animals[Math.floor(Math.random() * animals.length)];
+        }, 30);
+
+        randomFoodInterval = setInterval(() => {
+            document.getElementById("random-food").innerHTML = foods[Math.floor(Math.random() * foods.length)];
+        }, 30);
+
+        randomCountryInterval = setInterval(() => {
+            document.getElementById("random-country").innerHTML = countries[Math.floor(Math.random() * countries.length)];
+        }, 30);
+    } else {
+        // Stop randomization for each category one by one
+        if (randomAnimalInterval) {
+            clearInterval(randomAnimalInterval);
+            randomAnimalInterval = null;
+            document.getElementById("random-animal").innerHTML = lastAnimal;
+        } else if (randomFoodInterval) {
+            clearInterval(randomFoodInterval);
+            randomFoodInterval = null;
+            document.getElementById("random-food").innerHTML = lastFood;
+        } else if (randomCountryInterval) {
+            clearInterval(randomCountryInterval);
+            randomCountryInterval = null;
+            document.getElementById("random-country").innerHTML = lastCountry;
+
+            // Reset footer to original state immediately on the first stop
+            if (isFirstStop) {
+                resetFooter(); // Reset the footer immediately after the first click
+                isFirstStop = false; // Set flag to false after the first stop
+            }
+        }
+
+        // Change button text back to "Mulai" when all are stopped
+        if (!randomAnimalInterval && !randomFoodInterval && !randomCountryInterval) {
+            button.innerHTML = "Mulai";
+        }
+    }
+}
+
+function displayRandomValues() {
+    document.getElementById("random-animal").innerHTML = lastAnimal;
+    document.getElementById("random-food").innerHTML = lastFood;
+    document.getElementById("random-country").innerHTML = lastCountry;
+}
+
+function resetFooter() {
+    const footerUpdate = document.getElementById("footer-update");
+    footerUpdate.innerHTML = "PKT"; // Reset to original text
+}
+
+// Function to reset all values
+function resetAll() {
+      clearInterval(randomAnimalInterval);
+      clearInterval(randomFoodInterval);
+      clearInterval(randomCountryInterval);
+      document.getElementById("random-animal").innerHTML = "...";
+      document.getElementById("random-food").innerHTML = "...";
+      document.getElementById("random-country").innerHTML = "...";
+      resetFooter(); // Reset the footer to its original state
+      document.getElementById('randomizer-button').innerText = 'Mulai'; // Reset button text
+      isFirstStop = true; // Allow the first stop to display final values again
+    }
+  </script>
+
+</body>
+</html>
