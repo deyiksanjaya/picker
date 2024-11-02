@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Kartu Flash yang Dapat Disapu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            margin: 0;
+        }
+        .card-container {
+            position: relative;
+            width: 90vw;
+            max-width: 400px;
+            height: 70vh;
+            max-height: 600px;
+            overflow: hidden;
+        }
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #1f1f1f;
+            border: 3px solid white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 5vw; /* Responsive padding */
+            box-sizing: border-box;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 1;
+        }
+        .word {
+            font-size: 6vw;
+            font-weight: bold;
+            margin: 0;
+        }
+        .definition {
+            font-size: 4vw;
+            font-style: italic;
+            margin-top: 2vw;
+        }
+        .translate-button {
+            margin-top: auto;
+            background-color: black;
+            color: white;
+            border: 3px solid white;
+            border-radius: 5px;
+            padding: 1vw 2vw;
+            cursor: pointer;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .translate-button.loading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.6);
+            transform: translateX(-100%);
+            animation: loading-animation 1s forwards;
+        }
+        @keyframes loading-animation {
+            to {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card-container" id="cardContainer">
+    <!-- Kartu akan dihasilkan di sini -->
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<script>
+    const cardContainer = document.getElementById('cardContainer');
+
+    const words = [
+        "aberration", "benevolent", "cacophony", "debilitate", "ebullient", 
+        "fastidious", "garrulous", "halcyon", "iconoclast", "juxtapose", 
+        "labyrinthine", "mellifluous", "nefarious", "obfuscate",
+        "paucity", "quintessential", "resilient", "serendipity", "tranquility", 
+        "ubiquitous", "venerable", "whimsical", "xenophobia", "yonder", 
+        "zephyr", "abstruse", "cacophony", "deference", "effervescent", 
+        "flabbergasted", "gregarious", "harangue", "impecunious", "juxtaposition", 
+        "languid", "misanthrope", "neophyte", "obsequious", "pugnacious", 
+        "quixotic", "rambunctious", "sagacious", "taciturn", "utilitarian", 
+        "vicarious", "winsome", "yoke", "zenith", "ameliorate"
+    ];
+
+    let currentIndex = 0; // Indeks kartu saat ini
+    let definitions = []; // Array untuk menyimpan definisi
+    let swipeCount = 0; // Hitung jumlah sapuan
+    let lastSwipeTime = 0; // Waktu sapuan terakhir
+    let rapidSwipeThreshold = 1000; // Ambang batas waktu untuk sapuan cepat dalam milidetik
+    let stopSwipeTimer; // Timer untuk mendeteksi berhenti menyapu
+    let isKaleidoscopeShown = false; // Lacak apakah kartu Kaleidoskop ditampilkan
+    let isTranslated = false; // Lacak apakah kartu diterjemahkan
+
+    // Mengambil semua definisi kata
+    async function preloadDefinitions() {
+        const fetchPromises = words.map(async (word) => {
+            try {
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+                const data = await response.json();
+                return data[0]?.meanings[0]?.definitions[0]?.definition || "Definisi tidak ditemukan.";
+            } catch (error) {
+                console.error("Kesalahan saat mengambil definisi:", error);
+                return "Definisi tidak ditemukan.";
+            }
+        });
+
+        definitions = await Promise.all(fetchPromises);
+        console.log("Definisi telah dimuat:", definitions);
+        showNextCard(); // Mulai menampilkan kartu setelah memuat definisi
+    }
+
+    function showNextCard() {
+    if (currentIndex >= words.length || isKaleidoscopeShown) return;
+
+    const word = words[currentIndex];
+    const definition = definitions[currentIndex];
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+        <h2 class="word">${word}</h2>
+        <p class="definition">${definition}</p>
+        <div class="translate-button" onclick="translateCard('${definition}', this)">Terjemahkan</div>
+    `;
+    cardContainer.appendChild(card);
+
+    // Add double-click event listener to the card
+    card.addEventListener('dblclick', () => {
+        // Redirect to the specified URL
+        window.location.href = 'https://picker.my.id/word';
+
+        // Remove the current page from browser's history
+        history.pushState(null, document.title, location.href);
+        window.history.back(); // Go back to the previous page
+        window.history.forward(); // Go forward to the current page
+    });
+
+    const hammer = new Hammer(card);
+    hammer.on('swipeleft swiperight', (e) => {
+        handleSwipe(card, e.type === 'swiperight');
+    });
+}
+
+    function handleSwipe(card, isRightSwipe) {
+    const currentTime = Date.now();
+
+    // Memeriksa apakah sapuan cepat
+    if (currentTime - lastSwipeTime < rapidSwipeThreshold) {
+        swipeCount++;
+        console.log("Sapuan cepat terdeteksi.");
+    } else {
+        swipeCount = 1; // Reset hitungan jika bukan sapuan cepat
+        console.log("Sapuan normal terdeteksi.");
+    }
+
+    console.log(`Sapuan terdeteksi: ${isRightSwipe ? 'Kanan' : 'Kiri'}`);
+
+    // Mengatur waktu sapuan terakhir
+    lastSwipeTime = currentTime;
+
+    // Jika kaleidoskop ditampilkan, reset ke keadaan awal
+    if (isKaleidoscopeShown) {
+        isKaleidoscopeShown = false; // Menandai kaleidoskop tidak lagi ditampilkan
+        currentIndex = 0; // Reset index kembali ke 0 untuk menampilkan kartu pertama lagi
+    }
+
+    // Animasi sapuan
+    card.style.transform = `translateX(${isRightSwipe ? 100 : -100}%)`;
+    card.style.opacity = '0';
+
+    setTimeout(() => {
+        cardContainer.removeChild(card);
+        currentIndex++;
+
+        // Tampilkan kartu berikutnya jika bukan sapuan cepat
+        if (!isKaleidoscopeShown) {
+            showNextCard();
+        }
+
+        // Jika lebih dari 2 sapuan terdeteksi, mulai timer untuk kartu Kaleidoskop
+        if (swipeCount > 2) {
+            console.log("Memulai timer berhenti menyapu untuk kartu Kaleidoskop.");
+            startStopSwipeTimer();
+        }
+    }, 300);
+}
+
+    function startStopSwipeTimer() {
+        // Hapus timer sebelumnya jika ada
+        clearTimeout(stopSwipeTimer);
+        
+        // Atur timer baru selama 2 detik
+        stopSwipeTimer = setTimeout(() => {
+            showKaleidoscopeCard(); // Tampilkan kartu Kaleidoskop setelah 2 detik tidak aktif
+        }, 2000);
+    }
+
+    function showKaleidoscopeCard() {
+    // Hapus kartu yang ada
+    cardContainer.innerHTML = '';
+    isKaleidoscopeShown = true; // Tandai bahwa Kaleidoskop ditampilkan
+    const word = "Kaleidoscope"; // Kata khusus yang ditampilkan
+    const definition = "A tube-shaped optical instrument that contains mirrors and colored glass or other objects, creating a changing pattern of shapes and colors when viewed through one end."
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+        <h2 class="word">${word}</h2>
+        <p class="definition">${definition}</p>
+        <div class="translate-button" onclick="translateCard('${definition}', this)">Terjemahkan</div>
+    `;
+    cardContainer.appendChild(card);
+
+    const hammer = new Hammer(card);
+    hammer.on('swipeleft swiperight', (e) => {
+        handleSwipe(card, e.type === 'swiperight');
+    });
+}
+    async function translateCard(definition, button) {
+    if (!isTranslated) {
+        // Menambahkan kelas loading untuk animasi
+        button.classList.add('loading');
+
+        // Menggunakan MyMemory API untuk menerjemahkan definisi ke dalam Bahasa Indonesia
+        try {
+            const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(definition)}&langpair=en|id`);
+            const data = await response.json();
+            if (data.responseStatus === 200) {
+                const translatedDefinition = data.responseData.translatedText;
+
+                const card = cardContainer.lastChild; // Dapatkan kartu terakhir
+                card.querySelector('.definition').textContent = translatedDefinition;
+
+                // Ubah tombol menjadi revert
+                button.textContent = "Kembali";
+                isTranslated = true; // Tandai sebagai diterjemahkan
+            }
+        } catch (error) {
+            console.error('Terjemahan gagal:', error);
+        } finally {
+            // Menghapus kelas loading setelah selesai
+            button.classList.remove('loading');
+        }
+    } else {
+        // Kembalikan ke definisi asli
+        const card = cardContainer.lastChild; // Dapatkan kartu terakhir
+        card.querySelector('.definition').textContent = definition;
+
+        // Ubah tombol kembali menjadi terjemahkan
+        button.textContent = "Terjemahkan";
+        isTranslated = false; // Tandai sebagai tidak diterjemahkan
+    }
+}
+
+    // Memulai aplikasi
+    preloadDefinitions();
+</script>
+
+</body>
+</html>
