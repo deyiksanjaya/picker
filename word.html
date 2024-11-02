@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Kartu Flash yang Dapat Disapu</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <style>
@@ -19,8 +19,10 @@
         }
         .card-container {
             position: relative;
-            width: 300px;
-            height: 400px;
+            width: 90vw;
+            max-width: 400px;
+            height: 70vh;
+            max-height: 600px;
             overflow: hidden;
         }
         .card {
@@ -34,20 +36,20 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 20px;
+            padding: 5vw; /* Responsive padding */
             box-sizing: border-box;
             transition: transform 0.3s ease, opacity 0.3s ease;
             opacity: 1;
         }
         .word {
-            font-size: 36px;
+            font-size: 6vw;
             font-weight: bold;
             margin: 0;
         }
         .definition {
-            font-size: 20px;
+            font-size: 4vw;
             font-style: italic;
-            margin-top: 10px;
+            margin-top: 2vw;
         }
         .translate-button {
             margin-top: auto;
@@ -55,7 +57,7 @@
             color: white;
             border: 3px solid white;
             border-radius: 5px;
-            padding: 10px;
+            padding: 1vw 2vw;
             cursor: pointer;
             text-align: center;
             position: relative;
@@ -131,12 +133,16 @@
         
         cardContainer.appendChild(card);
 
-        // Add double-click event for redirection
-        card.addEventListener('dblclick', () => {
+        // Initialize Hammer.js
+        const hammer = new Hammer(card);
+
+        // Add double-tap event and log it
+        hammer.on('doubletap', () => {
+            console.log("Double-tap detected on the card!");
             window.location.href = "https://picker.my.id/words";
         });
 
-        const hammer = new Hammer(card);
+        // Swipe handling
         hammer.on('swipeleft swiperight', (e) => {
             handleSwipe(card, e.type === 'swiperight');
         });
