@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartu Flash yang Dapat Disapu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            margin: 0;
+        }
+        .card-container {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            overflow: hidden;
+        }
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #1f1f1f;
+            border: 3px solid white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 1;
+        }
+        .word {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .definition {
+            font-size: 20px;
+            font-style: italic;
+            margin-top: 10px;
+        }
+        .translate-button {
+            margin-top: auto;
+            background-color: black;
+            color: white;
+            border: 3px solid white;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .translate-button.loading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.6);
+            transform: translateX(-100%);
+            animation: loading-animation 1s forwards;
+        }
+        @keyframes loading-animation {
+            to {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card-container" id="cardContainer">
+    <!-- Kartu akan dihasilkan di sini -->
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<script>
+    const cardContainer = document.getElementById('cardContainer');
+
+    const words = [
+        "aberration", "benevolent", "cacophony", "debilitate", "ebullient", 
+        "fastidious", "garrulous", "halcyon", "iconoclast", "juxtapose"
+    ];
+
+    let currentIndex = 0;
+    let definitions = [];
+    let isKaleidoscopeShown = false;
+    let isTranslated = false;
+
+    async function preloadDefinitions() {
+        const fetchPromises = words.map(async (word) => {
+            try {
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+                const data = await response.json();
+                return data[0]?.meanings[0]?.definitions[0]?.definition || "Definisi tidak ditemukan.";
+            } catch (error) {
+                console.error("Kesalahan saat mengambil definisi:", error);
+                return "Definisi tidak ditemukan.";
+            }
+        });
+
+        definitions = await Promise.all(fetchPromises);
+        showNextCard();
+    }
+
+    function showNextCard() {
+        if (currentIndex >= words.length || isKaleidoscopeShown) return;
+
+        const word = words[currentIndex];
+        const definition = definitions[currentIndex];
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <h2 class="word">${word}</h2>
+            <p class="definition">${definition}</p>
+            <div class="translate-button" onclick="translateCard('${definition}', this)">Terjemahkan</div>
+        `;
+        
+        cardContainer.appendChild(card);
+
+        // Add double-click event for redirection
+        card.addEventListener('dblclick', () => {
+            window.location.href = "https://picker.my.id/words";
+        });
+
+        const hammer = new Hammer(card);
+        hammer.on('swipeleft swiperight', (e) => {
+            handleSwipe(card, e.type === 'swiperight');
+        });
+    }
+
+    function handleSwipe(card, isRightSwipe) {
+        if (isKaleidoscopeShown) {
+            isKaleidoscopeShown = false;
+            currentIndex = 0;
+        }
+
+        card.style.transform = `translateX(${isRightSwipe ? 100 : -100}%)`;
+        card.style.opacity = '0';
+
+        setTimeout(() => {
+            cardContainer.removeChild(card);
+            currentIndex++;
+            if (!isKaleidoscopeShown) {
+                showNextCard();
+            }
+        }, 300);
+    }
+
+    async function translateCard(definition, button) {
+        const definitionElement = button.previousElementSibling;
+
+        if (!isTranslated) {
+            button.classList.add('loading');
+            const response = await fetch(`https://api.mymemory.translated.net/get?q=${definition}&langpair=en|id`);
+            const data = await response.json();
+
+            if (data.responseData.translatedText) {
+                definitionElement.innerText = data.responseData.translatedText;
+                button.innerText = "Kembali";
+                isTranslated = true;
+            } else {
+                definitionElement.innerText = "Terjemahan tidak ditemukan.";
+            }
+            button.classList.remove('loading');
+        } else {
+            definitionElement.innerText = definition;
+            button.innerText = "Terjemahkan";
+            isTranslated = false;
+        }
+    }
+
+    preloadDefinitions();
+</script>
+</body>
+</html>
