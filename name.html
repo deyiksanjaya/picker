@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apa Makna Namamu?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet"> <!-- Import Google Font -->
+    <style>
+        /* Color palette */
+        :root {
+            --background-color: #f5f5f7;
+            --container-bg-color: #eddfe0;
+            --text-color: #705c53;
+            --button-color: #705c53;
+            --button-hover-color: #b7b7b7;
+            --input-border-color: #b7b7b7;
+            --disabled-color: #d3d3d3; /* Grey for disabled button */
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif; /* Use Montserrat font */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0 20px; /* Padding for left and right */
+            background-image: url('https://www.transparenttextures.com/patterns/fancy_pattern.png'); /* Example background image */
+            background-size: cover;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--container-bg-color);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            min-height: 400px; /* Increase container height */
+            position: relative; /* For absolute positioning */
+            overflow: hidden; /* Prevent overflow of decorations */
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--text-color);
+            font-weight: 700; /* Bold font */
+        }
+
+        .separator {
+            border-top: 2px solid var(--text-color);
+            margin: 15px 0;
+        }
+
+        p {
+            color: var(--text-color);
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--input-border-color);
+            font-size: 16px;
+            color: var(--text-color);
+            transition: border-color 0.3s ease; /* Transition effect */
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--button-color); /* Change border color on focus */
+            outline: none; /* Remove outline */
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border: none;
+            background-color: var(--button-color);
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s; /* Add transform for hover */
+        }
+
+        button:hover:not(.disabled) {
+            background-color: var(--button-hover-color);
+            color: var(--button-color);
+            transform: scale(1.05); /* Scale effect on hover */
+        }
+
+        .disabled {
+            background-color: var(--disabled-color); /* Grey background */
+            color: #ffffff; /* Keep text color white */
+            cursor: not-allowed; /* Change cursor to not-allowed */
+        }
+
+        .result {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center; /* Center text */
+            padding: 20px; /* Padding in result element */
+            background-color: var(--container-bg-color); /* Background for result */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow effect */
+            margin-top: 20px; /* Space above result element */
+            opacity: 0; /* Start invisible for animation */
+            transition: opacity 0.5s ease; /* Smooth transition for fade-in */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .visible {
+            opacity: 1; /* Fully visible */
+        }
+
+        i {
+            font-size: small;
+            display: block;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        /* Style for adjective result */
+        #adjective-result {
+            font-style: italic; /* Make text italic */
+            font-size: 0.9em; /* Smaller font size */
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Input Container -->
+        <div id="input-container">
+            <h2>Apa Makna Namamu?</h2>
+            <div class="separator"></div> <!-- Separator Line -->
+            <br>
+            <br>
+            <p>Masukkan nama panggilan Kamu:</p>
+            <input type="text" id="nama" placeholder="Nama panggilan">
+            <button id="generate-button" onclick="generateAdjectives()">Tampilkan Kata Sifat</button>
+        </div>
+
+        <!-- Result Container -->
+        <div id="result-container" class="hidden">
+            <br>
+            <br>
+            <br>
+            <div class="result visible">
+                <p id="adjective-result"><i></i></p>
+                <p id="name-result"></p>
+                <button onclick="resetPage()">Coba Lagi</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const adjectives = {
+            A: ["Audax", "Amicus", "Aureus"],
+            B: ["Bonus", "Brevior", "Bravus"],
+            C: ["Candidus", "Claritas", "Comis"],
+            D: ["Diligens", "Divinus", "Durus"],
+            E: ["Eloquentia", "Eximium", "Eternus"],
+            F: ["Fortis", "Fidelis", "Felix"],
+            G: ["Gratus", "Geminus", "Generosus"],
+            H: ["Humilis", "Honorabilis", "Hilaris"],
+            I: ["Innocens", "Intelligentia", "Iucundus"],
+            J: ["Jucundus", "Juvenilis", "Jubilans"],
+            K: ["Claritas", "Candidus", "Kreativus"],
+            L: ["Liberalitas", "Luxurians", "Luminus"],
+            M: ["Magnus", "Misericordia", "Mirus"],
+            N: ["Nobilis", "Novus", "Nutritius"],
+            O: ["Optimus", "Opulentus", "Oratorius"],
+            P: ["Pius", "Pulcher", "Prudentia"],
+            Q: ["Quantus", "Qualis", "Quickus"],
+            R: ["Rex", "Rara", "Robustus"],
+            S: ["Sapientia", "Simplicitas", "Splendidus"],
+            T: ["Tranquillus", "Tenax", "Tener"],
+            U: ["Utilis", "Unicus", "Urbani"],
+            V: ["Vigilans", "Virtuosus", "Vulgaris"],
+            W: ["Vivax", "Voluntas", "Venerabilis"],
+            X: ["Xenialis", "Xerophytus"],
+            Y: ["Youthful", "Yonder"],
+            Z: ["Zephyros", "Zelosus"]
+        };
+
+        const barnumStatements = [
+    "memiliki sisi kreatif yang sangat menarik",
+    "mampu membuat orang merasa nyaman di sekitarmu",
+    "sangat penuh perhatian pada orang-orang terdekat",
+    "punya intuisi kuat yang sering terbukti benar",
+    "selalu memiliki semangat untuk hal-hal baru",
+    "dikenal sebagai pendengar yang baik",
+    "sangat fokus pada tujuan hidupmu",
+    "terlihat sangat tenang dalam menghadapi situasi sulit",
+    "dihargai banyak orang karena sifat ramahmu",
+    "penuh energi dan inspirasi bagi orang lain",
+    "mempunyai cara pandang yang unik terhadap dunia",
+    "memiliki kemampuan adaptasi yang luar biasa",
+    "sering kali menjadi sumber inspirasi bagi orang lain",
+    "punya kemampuan untuk melihat sisi baik dalam setiap hal",
+    "sering berpikir mendalam tentang makna kehidupan",
+    "terkadang merasakan hubungan yang mendalam dengan alam",
+    "memiliki keseimbangan antara logika dan emosi",
+    "selalu mencari cara untuk meningkatkan diri",
+    "pandai membaca suasana hati orang lain",
+    "punya semangat yang tidak mudah padam",
+    "mampu melihat peluang di tempat yang tak terduga",
+    "penuh rasa ingin tahu dan selalu ingin belajar",
+    "memiliki keteguhan hati yang mengagumkan",
+    "mudah berempati dan memahami perasaan orang lain",
+    "selalu berusaha menjaga kedamaian di sekitar",
+    "mempunyai jiwa petualang yang tak terbatas",
+    "mudah menarik perhatian karena kepribadianmu",
+    "pandai mengungkapkan perasaan dengan kata-kata",
+    "mampu menenangkan orang yang sedang gelisah",
+    "sering kali memancarkan aura positif",
+    "penuh perhatian pada hal-hal kecil yang bermakna",
+    "dikenal karena sifat murah hati yang tulus",
+    "menikmati proses dan pembelajaran dalam hidup",
+    "punya kemampuan berpikir di luar kotak",
+    "senang berbagi kebahagiaan dengan orang lain",
+    "punya kemampuan menghadirkan kebahagiaan",
+    "dikenal memiliki semangat juang yang tinggi",
+    "sering kali bertindak sebagai jembatan dalam pertemanan",
+    "dihargai karena kesetiaan dan kejujuranmu",
+    "punya visi hidup yang jelas dan penuh tujuan",
+    "mampu membawa ketenangan dalam keadaan sulit",
+    "terlihat sebagai orang yang penuh wawasan",
+    "punya jiwa pemberi yang kuat dan tulus",
+    "dikenal sebagai pendukung setia bagi teman-teman",
+    "punya hati yang lapang untuk memaafkan",
+    "selalu dapat diandalkan dalam situasi darurat",
+    "mampu memotivasi diri sendiri dan orang lain",
+    "punya energi positif yang menginspirasi sekitar",
+    "terkenal dengan dedikasi tinggi pada setiap hal",
+    "sering dipuji karena etos kerja yang luar biasa"
+];
+
+        function generateAdjectives() {
+            const nama = document.getElementById("nama").value.trim(); // Ambil input dan hapus spasi
+            console.log("Input Nama: ", nama); // Log input name
+            if (!nama) {
+                alert("Silakan masukkan nama panggilan!");
+                console.error("Input kosong"); // Log error for empty input
+                return; // Hentikan fungsi jika nama kosong
+            }
+
+            let modifiedName = "";
+
+            // Mengubah setiap huruf menjadi huruf sebelumnya dalam alfabet
+            for (let char of nama.toUpperCase()) {
+                if (char >= 'B' && char <= 'Z') {
+                    modifiedName += String.fromCharCode(char.charCodeAt(0) - 1); // Ganti setiap huruf menjadi huruf sebelumnya
+                } else if (char === 'A') {
+                    modifiedName += 'Z'; // Ganti A dengan Z
+                } else {
+                    modifiedName += char; // Pertahankan karakter lainnya (spasi, dll.)
+                }
+            }
+            console.log("Modified Name: ", modifiedName); // Log modified name
+
+            let adjectiveResult = "";
+            let nameResult = "";
+
+            // Mendapatkan kata sifat berdasarkan huruf dalam nama
+            for (let char of modifiedName) {
+                if (adjectives[char]) {
+                    const randomAdjective = adjectives[char][Math.floor(Math.random() * adjectives[char].length)];
+                    adjectiveResult += randomAdjective + ", ";
+                } else {
+                    console.warn("Tidak ada kata sifat untuk huruf: ", char); // Log warning for missing adjectives
+                }
+            }
+
+            if (adjectiveResult) {
+                // Menghapus koma terakhir
+                adjectiveResult = adjectiveResult.slice(0, -2) + ".";
+                nameResult += "<i>" + adjectiveResult + "</i><br>";
+                nameResult += "Kamu " + barnumStatements[Math.floor(Math.random() * barnumStatements.length)] + ".";
+            } else {
+                nameResult += "Maaf, tidak ada kata sifat untuk nama ini.";
+                console.error("Tidak ada kata sifat yang ditemukan."); // Log error if no adjectives found
+            }
+
+            // Menampilkan hasil
+            document.getElementById("adjective-result").innerHTML = nameResult;
+            document.getElementById("name-result").innerHTML = "";
+            document.getElementById("result-container").classList.remove("hidden");
+            document.getElementById("result-container").scrollIntoView({ behavior: "smooth" }); // Scroll to result container
+            document.querySelector(".result").classList.add("visible"); // Fade-in effect
+
+            // Disable button
+            const generateButton = document.getElementById("generate-button");
+            generateButton.classList.add("disabled"); // Add disabled class
+            generateButton.disabled = true; // Disable the button
+        }
+
+        function resetPage() {
+            document.getElementById("nama").value = ""; // Kosongkan input
+            document.getElementById("result-container").classList.add("hidden");
+            document.querySelector(".result").classList.remove("visible");
+            document.getElementById("result-container").scrollIntoView({ behavior: "smooth" }); // Scroll back to input
+            
+            // Enable the button again
+            const generateButton = document.getElementById("generate-button");
+            generateButton.classList.remove("disabled"); // Remove disabled class
+            generateButton.disabled = false; // Enable the button
+        }
+    </script>
+</body>
+</html>
