@@ -7,25 +7,178 @@
     <style>
         body {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: flex-start; /* Align items to the top */
             align-items: center;
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            padding-top: 40px; /* Adds space from the top of the page */
+            position: relative; /* Allows positioning of children elements */
         }
-        img {
+        h1 {
+            font-size: 2rem;
+            color: rgba(51, 51, 51, 0.3); /* Light color for the title to blend in */
+            text-align: center; /* Center align the title */
+            margin-bottom: 20px; /* Space between the title and the container */
+            position: absolute; /* Positioning the title */
+            top: 0%; /* Adjusts the vertical position */
+            z-index: 1; /* Keeps it on top */
+        }
+        .image-container {
+            width: 80%; /* Adjust width as needed */
+            top: 10%;
+            max-width: 500px;
+            padding: 10px;
+            background-color: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative; /* Needed for z-index */
+            z-index: 2; /* Higher z-index to place it on top of the title */
+        }
+        .image-container img {
             max-width: 100%;
             height: auto;
+            border-radius: 5px;
+        }
+        .grid {
+            opacity: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 columns */
+            gap: 10px; /* Space between items */
+            position: absolute; /* Positioning it in the middle */
+            top: 50%; /* Center vertically */
+            transform: translateY(-50%); /* Adjust for exact centering */
+            z-index: 3; /* On top of other elements */
+        }
+        .grid-item {
+            width: 100px; /* Fixed width for grid items */
+            height: 100px; /* Fixed height for grid items */
+            background-color: #ccc; /* Background color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #aaa; /* Border for better visibility */
+            border-radius: 8px;
+            cursor: pointer; /* Show pointer cursor on hover */
+            transition: background-color 0.3s; /* Smooth transition */
+        }
+        .grid-item:hover {
+            background-color: #bbb; /* Change on hover */
         }
     </style>
     <script>
-        // Log message to the console when the image loads
+        let gridVisible = false; // Track whether the grid is visible
+
+        // Function to change the image based on user input
+        function changeImage(imageUrl) {
+            const imgElement = document.querySelector('.image-container img');
+            imgElement.src = imageUrl;
+        }
+
+        // Function to remove the grid
+        function removeGrid() {
+            const grid = document.querySelector('.grid');
+            if (grid) {
+                grid.remove();
+                gridVisible = false; // Update grid visibility
+            }
+        }
+
+        // Handle swipe up on grid items
+        function handleSwipeUp(event) {
+            const target = event.currentTarget; // Use currentTarget to reference the touched item
+            const inputValue = target.dataset.value; // Get input value
+            let imageUrl = '';
+
+            // Determine which image to show
+            switch (inputValue) {
+                case '1':
+                    imageUrl = 'https://i.ibb.co.com/dmC2LPs/1.jpg';
+                    break;
+                case '2':
+                    imageUrl = 'https://i.ibb.co.com/5kzp98z/2.jpg';
+                    break;
+                case '3':
+                    imageUrl = 'https://i.ibb.co.com/LrZyRb0/3.jpg';
+                    break;
+            }
+            changeImage(imageUrl); // Change the image
+            removeGrid(); // Remove the grid
+        }
+
+        // Handle touch events to detect swipe outside
+        function handleTouchStart(event) {
+            this.startY = event.touches[0].clientY; // Store the starting Y position
+            this.startX = event.touches[0].clientX; // Store the starting X position
+        }
+
+        function handleTouchMove(event) {
+            const deltaY = event.touches[0].clientY - this.startY;
+            const deltaX = event.touches[0].clientX - this.startX;
+            const grid = document.querySelector('.grid');
+
+            // Check if the user swiped outside the grid
+            if (gridVisible && !grid.contains(event.target)) {
+                if (deltaY < -30) { // User swiped up
+                    removeGrid(); // Remove the grid if swiped up outside
+                }
+            }
+            else if (deltaY < -30 && grid.contains(event.target)) { // If swiped up on grid item
+                handleSwipeUp(event);
+            }
+        }
+
+        // Handle clicks outside the grid to remove it
+        function handleClickOutside(event) {
+            const grid = document.querySelector('.grid');
+            if (grid && !grid.contains(event.target)) {
+                removeGrid();
+            }
+        }
+
+        // Initialize the grid when the window loads
         window.onload = function() {
             console.log("Image has been loaded successfully!");
+
+            // Create the grid dynamically
+            const grid = document.createElement('div');
+            grid.classList.add('grid');
+            gridVisible = true; // Set grid visibility to true
+
+            // Create grid items
+            for (let i = 1; i <= 3; i++) {
+                const gridItem = document.createElement('div');
+                gridItem.classList.add('grid-item');
+                gridItem.textContent = i; // Display the number
+                gridItem.dataset.value = i; // Set data attribute for value
+                
+                // Add touch event listeners for swipe detection
+                gridItem.addEventListener('touchstart', handleTouchStart);
+                gridItem.addEventListener('touchmove', handleTouchMove);
+                
+                grid.appendChild(gridItem);
+            }
+
+            document.body.appendChild(grid); // Add grid to the body
+            document.addEventListener('click', handleClickOutside); // Click outside event
+            document.addEventListener('touchstart', handleTouchStart); // Touch start for body
+            document.addEventListener('touchmove', handleTouchMove); // Touch move for body
         };
+        
+        
     </script>
 </head>
 <body>
-    <img src="https://i.ibb.co/sCSV44Q/4.png" alt="Image">
+
+    <h1>Test Your Luck</h1> <!-- Title behind other elements -->
+    
+    <div class="image-container">
+        <img src="https://i.ibb.co.com/dcJ0fVG/4.jpg" alt="Image"> <!-- Updated image link -->
+    </div>
+
 </body>
 </html>
