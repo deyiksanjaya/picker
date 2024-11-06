@@ -5,11 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Random Choice Maker</title>
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: auto; /* Allow scrolling */
+            height: 100%; /* Ensure full height */
+        }
+
         .container {
             width: 10000px;
             height: 10000px;
             display: grid;
-            grid-template-columns: repeat(200, 50px); /* 200 columns */
+            grid-template-columns: repeat(200, 50px);
             gap: 2px;
             position: relative;
         }
@@ -31,14 +38,14 @@
 
         .fixed-plus {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             font-size: 50px;
             color: red;
             font-weight: bold;
             z-index: 1000;
             pointer-events: none;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Center the element */
         }
     </style>
 </head>
@@ -55,9 +62,8 @@
         let detectionCount = 0;
         let secondDetectedNumber = null;
 
-        // Check if the 'id' parameter exists in the URL
         const topic = new URLSearchParams(window.location.search).get('id');
-        let isForceMode = !topic;  // If there's no 'id' in the URL, force mode is activated
+        let isForceMode = !topic;
 
         if (isForceMode) {
             console.log("Force mode activated. Sending data to ntfy.sh is disabled.");
@@ -69,11 +75,9 @@
                 const cell = document.createElement('div');
                 cell.className = 'cell';
 
-                // Calculate value using the row and column in a predictable, pseudo-random pattern
                 const number = ((row * 37 + col * 41) % 100) + 1;
                 cell.textContent = number;
 
-                // Store the row and column in data attributes
                 cell.setAttribute('data-row', row);
                 cell.setAttribute('data-col', col);
                 cell.setAttribute('data-number', number);
@@ -82,7 +86,6 @@
             }
         }
 
-        // Function to detect the cell closest to the red plus sign using bounding rectangles
         function detectClosestCell() {
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
@@ -113,34 +116,26 @@
                 closestCell.classList.add('highlight');
                 previousHighlightedCell = closestCell;
 
-                // Increment the detection count
                 detectionCount++;
-
-                // Log the detection count
                 console.log(`Detection count: ${detectionCount}`);
 
-                // Log the highlighted cell's number to the console and send data starting from the 3rd detection
                 let number = closestCell.getAttribute('data-number');
                 console.log(`Highlighted number: ${number}`);
 
-                // Force mode: on 3rd detection, change the highlighted number based on the formula
                 if (detectionCount === 2 && isForceMode) {
                     secondDetectedNumber = parseInt(number);
                 }
 
                 if (detectionCount === 3 && isForceMode) {
-                    // Apply the formula (2nd detected number - 11), and fallback to 10 if result is <= 0
                     let newNumber = secondDetectedNumber - 11;
                     if (newNumber <= 0) {
                         newNumber = 10;
                     }
 
-                    // Change the number in the highlighted cell
                     closestCell.textContent = newNumber;
                     console.log(`New number after calculation: ${newNumber}`);
                 }
 
-                // Skip sending data in force mode
                 if (detectionCount >= 3 && !isForceMode) {
                     if (topic) {
                         fetch(`https://ntfy.sh/${topic}`, {
@@ -159,7 +154,24 @@
             }
         }
 
-        // Center the page initially and set up scroll detection
+        // Request fullscreen on page load
+        function enterFullscreen() {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+                document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+                document.documentElement.msRequestFullscreen();
+            }
+        }
+
+        // Check if the page is in fullscreen mode
+        function isFullscreen() {
+            return (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+        }
+
         function centerPage() {
             window.scrollTo({
                 top: 5000,
@@ -168,20 +180,18 @@
             });
         }
 
-        // Check if the page is centered to prevent center scroll from triggering detection
         function isPageCentered() {
             return window.scrollX === 5000 && window.scrollY === 5000;
         }
 
         window.onload = function() {
+            enterFullscreen();  // Activate fullscreen on page load
             centerPage();
 
-            // Detect end of scroll to trigger detection
             let isScrolling;
             window.addEventListener('scroll', function () {
                 window.clearTimeout(isScrolling);
 
-                // Only trigger detection if page is not centered
                 if (!isPageCentered()) {
                     isScrolling = setTimeout(detectClosestCell, 250);
                 }
