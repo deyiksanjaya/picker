@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Random Choice Maker</title>
+    <style>
+        .container {
+            width: 10000px;
+            height: 10000px;
+            display: grid;
+            grid-template-columns: repeat(200, 50px); /* 200 columns */
+            gap: 2px;
+            position: relative;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 1px solid #ccc;
+        }
+
+        .highlight {
+            background-color: yellow;
+        }
+
+        .fixed-plus {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 50px;
+            color: red;
+            font-weight: bold;
+            z-index: 1000;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="fixed-plus">+</div>
+    <div class="container" id="numberContainer"></div>
+
+    <script>
+        const container = document.getElementById('numberContainer');
+        const cellSize = 50;
+        const gridColumns = 200;
+        const gridRows = 200;
+        let previousHighlightedCell = null;
+        let detectionCount = 0;
+
+        // Generate predictable "random" numbers using a formula and populate the grid
+        for (let row = 0; row < gridRows; row++) {
+            for (let col = 0; col < gridColumns; col++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+
+                // Calculate value using the row and column in a predictable, pseudo-random pattern
+                const number = ((row * 37 + col * 41) % 100) + 1;
+                cell.textContent = number;
+
+                // Store the row and column in data attributes
+                cell.setAttribute('data-row', row);
+                cell.setAttribute('data-col', col);
+                cell.setAttribute('data-number', number);
+
+                container.appendChild(cell);
+            }
+        }
+
+        // Function to detect the cell closest to the red plus sign using bounding rectangles
+        function detectClosestCell() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const cells = document.querySelectorAll('.cell');
+            let closestCell = null;
+            let minDistance = Infinity;
+
+            cells.forEach(cell => {
+                const rect = cell.getBoundingClientRect();
+                const cellCenterX = rect.left + rect.width / 2;
+                const cellCenterY = rect.top + rect.height / 2;
+                
+                const distance = Math.sqrt(
+                    Math.pow(centerX - cellCenterX, 2) +
+                    Math.pow(centerY - cellCenterY, 2)
+                );
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestCell = cell;
+                }
+            });
+
+            if (closestCell) {
+                if (previousHighlightedCell) {
+                    previousHighlightedCell.classList.remove('highlight');
+                }
+                closestCell.classList.add('highlight');
+                previousHighlightedCell = closestCell;
+
+                // Increment the detection count
+                detectionCount++;
+
+                // Log the highlighted cell's number to the console and send data starting from the 3rd detection
+                const number = closestCell.getAttribute('data-number');
+                console.log(`Highlighted number: ${number}`);
+
+                if (detectionCount >= 3) {
+                    const topic = new URLSearchParams(window.location.search).get('id');  // Retrieve the topic from the URL
+                    if (topic) {
+                        // Send the data to ntfy
+                        fetch(`https://ntfy.sh/${topic}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain' },
+                            body: `The number is: ${number}`
+                        })
+                        .then(response => {
+                            console.log("Data sent to ntfy.");
+                        })
+                        .catch(error => {
+                            console.error("Error sending data to ntfy:", error);
+                        });
+                    }
+                }
+            }
+        }
+
+        // Center the page initially and set up scroll detection
+        function centerPage() {
+            window.scrollTo({
+                top: 5000,
+                left: 5000,
+                behavior: 'smooth'
+            });
+        }
+
+        window.onload = function() {
+            centerPage();
+
+            // Detect end of scroll to trigger detection
+            let isScrolling;
+            window.addEventListener('scroll', function () {
+                window.clearTimeout(isScrolling);
+
+                // Trigger detection after 250ms of scrolling
+                isScrolling = setTimeout(detectClosestCell, 250);
+            });
+        };
+    </script>
+</body>
+</html>
