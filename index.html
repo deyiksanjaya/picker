@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PICKER : Help You Decide</title>
+    
+    <!-- Link to Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            padding: 2rem;
+        }
+
+        /* Title Styling */
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #d67f43; /* Warm earthy accent color */
+            text-align: center;
+        }
+
+        /* Menu Container */
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 600px;
+            align-items: center;
+        }
+
+        /* Thumbnail Styling */
+        .thumbnail {
+            width: 100%;
+            max-width: 350px;
+            background-color: #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .thumbnail:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 3px solid #d67f43; /* Earthy accent color */
+        }
+
+        .thumbnail-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            padding: 1rem;
+            text-align: center;
+            color: #e0e0e0;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            color: #a0a0a0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>PICKER : Help You Decide</h1>
+    
+    <div class="menu">
+    
+    <!-- Pick3R -->
+        <a href="https://picker.my.id/go" class="thumbnail">
+            <img src="https://i.ibb.co.com/xJ6SLT1/IMG-7555.jpg" alt="List Randomizer">
+            <div class="thumbnail-title">PICK3R</div>
+        </a>
+    
+        <!-- 2D Dice -->
+        <a href="https://picker.my.id/numbers" class="thumbnail">
+            <img src="https://i.ibb.co.com/1JrCv6r/IMG-7552.jpg" alt="2D Dice">
+            <div class="thumbnail-title">2D Dice</div>
+        </a>
+
+        <!-- 2D Dice Advance -->
+        <a href="https://picker.my.id/numbers?id=mypeek" class="thumbnail">
+            <img src="https://i.ibb.co.com/VHc5dZ7/IMG-7550.jpg" alt="2D Dice Advance">
+            <div class="thumbnail-title">2D Dice Advance</div>
+        </a>
+
+        <!-- List Randomizer -->
+        <a href="https://picker.my.id/list" class="thumbnail">
+            <img src="https://i.ibb.co.com/881wXLv/IMG-7551.jpg" alt="List Randomizer">
+            <div class="thumbnail-title">List Randomizer</div>
+        </a>
+    </div>
+
+    <footer>&copy; <span id="year"></span> PICKER. All rights reserved.</footer>
+
+    <script>
+        // Set the current year in the footer
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+    
+</body>
+</html>
