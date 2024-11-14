@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe with AI Suggestion</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1d1f27;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #f5f5f5;
+            box-sizing: border-box;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #2a2f3a;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            width: 400px;
+            border: 1px solid #444;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #00bcd4;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            font-size: 1.5em;
+            color: #00bcd4;
+            margin-bottom: 10px;
+        }
+
+        /* Game Grid */
+        #game {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(3, 120px);
+            gap: 8px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 120px;
+            height: 120px;
+            background-color: #3c4457;
+            border: 2px solid #4b5363;
+            border-radius: 12px;
+            font-size: 3em;
+            color: #f5f5f5;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .cell:hover {
+            background-color: #4f5865;
+            transform: scale(1.05);
+        }
+
+        .cell.disabled {
+            pointer-events: none;
+            background-color: #222;
+            color: #888;
+        }
+
+        /* Message and Retry Button */
+        #message {
+            font-size: 1.3em;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #f5f5f5;
+        }
+
+        #retry {
+            padding: 12px 24px;
+            font-size: 1.1em;
+            cursor: pointer;
+            background-color: #00bcd4;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #retry:hover {
+            background-color: #03a9f4;
+            transform: translateY(-2px);
+        }
+
+        #retry:active {
+            background-color: #0288d1;
+            transform: translateY(2px);
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 500px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            #game {
+                grid-template-columns: repeat(3, 100px);
+                grid-template-rows: repeat(3, 100px);
+                gap: 5px;
+            }
+
+            .cell {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tic Tac Toe</h1>
+        <div id="game"></div>
+        <div id="message">You are "O". AI (Player 2) is "X". You go first!</div>
+        <button id="retry" onclick="resetGame()">Retry</button>
+    </div>
+
+    <script>
+        let board;
+        let currentPlayer = 'O';  // Player 1 starts with "O"
+        const gameDiv = document.getElementById('game');
+        const messageDiv = document.getElementById('message');
+
+        function initializeBoard() {
+            board = Array(3).fill().map(() => Array(3).fill(' '));
+            gameDiv.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', () => playerMove(i, j, cell));
+                    gameDiv.appendChild(cell);
+                }
+            }
+            messageDiv.textContent = `Player 1 go first!`;
+            console.log("Current turn: Player 1 (O)");
+        }
+
+        function playerMove(row, col, cell) {
+            if (board[row][col] === ' ' && currentPlayer === 'O') {
+                // Player (You) makes a move
+                board[row][col] = 'O';
+                cell.textContent = 'O';
+                cell.classList.add('disabled');
+                
+                // Check if Player 1 wins
+                if (checkWinner(board) === 'O') {
+                    messageDiv.textContent = 'You win!';
+                    console.log("Player 1 (O) wins!");
+                    disableBoard();
+                    return;
+                } else if (isFull(board)) {
+                    messageDiv.textContent = "It's a draw!";
+                    console.log("It's a draw!");
+                    return;
+                }
+
+                // Switch to AI's turn and suggest the best move
+                currentPlayer = 'X';  
+                console.log("Current turn: AI (X)");  // Log AI's turn
+                messageDiv.textContent = "Player 2's Turn";
+                setTimeout(aiSuggestMove, 500);  // Delay AI suggestion
+            }
+        }
+
+        function aiSuggestMove() {
+    const bestMove = getBestMove(); // AI suggests the best move
+    const row = bestMove.row + 1;  // Adjust row and col for 1-based index
+    const col = bestMove.col + 1;
+
+    // Check if there is a winning move for AI
+    const winningMove = checkWinningMove('X');
+    const moveMessage = winningMove 
+        ? `C: ${winningMove.col + 1}, R: ${winningMove.row + 1} (Winning Move)`  // Winning move message
+        : `C: ${col}, R: ${row}`;  // Regular AI move message
+
+    // Send the move to ntfy.sh
+    fetch('https://ntfy.sh/mypeek', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain',
+        },
+        body: moveMessage  // Send the move (winning or regular)
+    }).then(response => {
+        if (response.ok) {
+            console.log("Move sent to ntfy.sh successfully.");
+        } else {
+            console.log("Failed to send move to ntfy.sh.");
+        }
+    }).catch(error => {
+        console.error("Error sending move to ntfy.sh:", error);
+    });
+
+    // Wait for Player 2 (AI) to actually place the move
+    const aiCell = document.querySelector(`[data-row='${bestMove.row}'][data-col='${bestMove.col}']`);
+    aiCell.classList.remove('disabled');
+    aiCell.addEventListener('click', () => aiMove(bestMove.row, bestMove.col, aiCell));
+}
+
+// Function to check if AI (Player 2) has a winning move
+function checkWinningMove(player) {
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (board[i][j] === ' ') {
+                board[i][j] = player;  // Temporarily make the move
+                if (checkWinner(board) === player) {
+                    board[i][j] = ' ';  // Revert the move
+                    return { row: i, col: j };
+                }
+                board[i][j] = ' ';  // Revert the move
+            }
+        }
+    }
+    return null;  // No winning move
+}
+
+        function aiMove(row, col, cell) {
+            // AI makes its move
+            board[row][col] = 'X';
+            cell.textContent = 'X';
+            cell.classList.add('disabled');
+            
+            // Check if AI wins
+            if (checkWinner(board) === 'X') {
+                messageDiv.textContent = 'Player 2 wins!';
+                console.log("Player 2 (X) wins!");
+                disableBoard();
+                return;
+            } else if (isFull(board)) {
+                messageDiv.textContent = "It's a draw!";
+                console.log("It's a draw!");
+                return;
+            }
+
+            // Switch back to Player 1's turn after AI move
+            currentPlayer = 'O';  
+            console.log("Current turn: Player 1 (O)");  // Log Player 1's turn
+            messageDiv.textContent = "Your turn!";
+        }
+
+        function getBestMove() {
+            let bestScore = -Infinity;
+            let move;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[i][j] === ' ') {
+                        board[i][j] = 'X';
+                        const score = minimax(board, 0, false);
+                        board[i][j] = ' ';
+                        if (score > bestScore) {
+                            bestScore = score;
+                            move = { row: i, col: j };
+                        }
+                    }
+                }
+            }
+            return move;
+        }
+
+        function minimax(b, depth, isMaximizing) {
+            const winner = checkWinner(b);
+            if (winner === 'X') return 1;
+            if (winner === 'O') return -1;
+            if (isFull(b)) return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        if (b[i][j] === ' ') {
+                            b[i][j] = 'X';
+                            const score = minimax(b, depth + 1, false);
+                            b[i][j] = ' ';
+                            bestScore = Math.max(score, bestScore);
+                        }
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        if (b[i][j] === ' ') {
+                            b[i][j] = 'O';
+                            const score = minimax(b, depth + 1, true);
+                            b[i][j] = ' ';
+                            bestScore = Math.min(score, bestScore);
+                        }
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function checkWinner(b) {
+            for (let i = 0; i < 3; i++) {
+                if (b[i][0] === b[i][1] && b[i][1] === b[i][2] && b[i][0] !== ' ') return b[i][0];
+                if (b[0][i] === b[1][i] && b[1][i] === b[2][i] && b[0][i] !== ' ') return b[0][i];
+            }
+            if (b[0][0] === b[1][1] && b[1][1] === b[2][2] && b[0][0] !== ' ') return b[0][0];
+            if (b[0][2] === b[1][1] && b[1][1] === b[2][0] && b[0][2] !== ' ') return b[0][2];
+            return null;
+        }
+
+        function isFull(b) {
+            return b.every(row => row.every(cell => cell !== ' '));
+        }
+
+        function disableBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.classList.add('disabled');
+            });
+        }
+
+        function resetGame() {
+            initializeBoard();
+            currentPlayer = 'O';  // Player 1 starts with "O"
+        }
+
+        // Initialize the game on page load
+        initializeBoard();
+    </script>
+</body>
+</html>
