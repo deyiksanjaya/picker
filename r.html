@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting…</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #fff;
+      font-family: Arial, sans-serif;
+    }
+    .loading-text {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      animation: breathing 1.5s infinite;
+    }
+    @keyframes breathing {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-text">Preparing the link...</div>
+
+  <script>
+    const endpoint = "https://sheetdb.io/api/v1/u38a3fdoka1qp";
+    let oldData = null;
+
+    // Fetch the initial data and set it as old data
+    async function initializeData() {
+      try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+        oldData = data; // Set the fetched data as old data
+        console.log("Initial data loaded:", oldData);
+      } catch (error) {
+        console.error("Error initializing data:", error);
+      }
+    }
+
+    // Check for changes in the data
+    async function checkForChanges() {
+      try {
+        const response = await fetch(endpoint);
+        const newData = await response.json();
+
+        if (JSON.stringify(newData) !== JSON.stringify(oldData)) {
+          console.log("Data updated:", newData);
+          oldData = newData; // Update old data
+
+          // Extract the new "Value" and perform a YouTube search
+          if (newData && newData.length > 0) {
+            const keyword = encodeURIComponent(newData[0].Value || ""); // Use "Value" column
+            if (keyword) {
+              window.location.href = `https://www.youtube.com/results?search_query=${keyword}`;
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking for changes:", error);
+      }
+    }
+
+    // Initialize data and then start polling for changes
+    initializeData().then(() => {
+      setInterval(checkForChanges, 5000); // Poll every 5 seconds
+    });
+  </script>
+</body>
+</html>
