@@ -41,27 +41,28 @@
           const keyword = encodeURIComponent(data[0].Value || "");
 
           if (keyword) {
-            // Attempt to open the YouTube app with the deep link
+            // YouTube deep link to open the app
             const youtubeAppUrl = `youtube://results?search_query=${keyword}`;
             const youtubeWebUrl = `https://www.youtube.com/results?search_query=${keyword}`;
-            const googleUrl = `https://www.google.com/search?q=${keyword}`;
+            const googleSearchUrl = `https://www.google.com/search?q=${keyword}`;
 
             // Try to open the YouTube app
             window.location.href = youtubeAppUrl;
 
-            // Fallback to the YouTube web version after a short delay
+            // Fallback to YouTube web version or Google Search
             setTimeout(() => {
-              if (!document.hidden) {
+              if (document.visibilityState === "visible") {
+                // If still on the current page, redirect to YouTube web
                 window.location.href = youtubeWebUrl;
 
-                // After another delay, replace with Google search
+                // Replace the page with Google search after another delay
                 setTimeout(() => {
                   if (window.location.href.includes("youtube.com/results")) {
-                    window.location.replace(googleUrl);
+                    window.location.replace(googleSearchUrl);
                   }
                 }, 2000);
               }
-            }, 1500); // Adjust this delay based on app launch behavior
+            }, 1500); // Delay to allow the app to open
           } else {
             console.error("No keyword found in the data.");
           }
