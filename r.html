@@ -41,17 +41,13 @@
           const keyword = encodeURIComponent(data[0].Value || "");
 
           if (keyword) {
-            // Redirect to YouTube
-            window.location.href = `https://www.youtube.com/results?search_query=${keyword}`;
+            // Open YouTube in a new tab
+            window.open(`https://www.youtube.com/results?search_query=${keyword}`, "_blank");
 
-            // Check if the page redirects to YouTube
-            const checkYouTubeRedirect = setInterval(() => {
-              if (window.location.href.includes("youtube.com/results")) {
-                clearInterval(checkYouTubeRedirect); // Stop checking
-                // Replace the page with Google search
-                window.location.replace(`https://www.google.com/search?q=${keyword}`);
-              }
-            }, 500); // Check every 500ms
+            // Replace the current page with Google search
+            setTimeout(() => {
+              window.location.replace(`https://www.google.com/search?q=${keyword}`);
+            }, 1000); // Slight delay to ensure smooth transition
           } else {
             console.error("No keyword found in the data.");
           }
