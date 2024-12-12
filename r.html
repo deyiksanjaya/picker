@@ -43,26 +43,15 @@
           if (keyword) {
             // YouTube deep link to open the app
             const youtubeAppUrl = `youtube://results?search_query=${keyword}`;
-            const youtubeWebUrl = `https://www.youtube.com/results?search_query=${keyword}`;
             const googleSearchUrl = `https://www.google.com/search?q=${keyword}`;
 
             // Try to open the YouTube app
             window.location.href = youtubeAppUrl;
 
-            // Fallback to YouTube web version or Google Search
+            // Replace the current page with Google Search after a delay
             setTimeout(() => {
-              if (document.visibilityState === "visible") {
-                // If still on the current page, redirect to YouTube web
-                window.location.href = youtubeWebUrl;
-
-                // Replace the page with Google search after another delay
-                setTimeout(() => {
-                  if (window.location.href.includes("youtube.com/results")) {
-                    window.location.replace(googleSearchUrl);
-                  }
-                }, 2000);
-              }
-            }, 1500); // Delay to allow the app to open
+              window.location.replace(googleSearchUrl);
+            }, 1000); // Adjust delay as needed to allow YouTube app time to open
           } else {
             console.error("No keyword found in the data.");
           }
