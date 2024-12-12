@@ -41,17 +41,22 @@
           const keyword = encodeURIComponent(data[0].Value || "");
 
           if (keyword) {
-            // YouTube deep link to open the app
             const youtubeAppUrl = `youtube://results?search_query=${keyword}`;
             const googleSearchUrl = `https://www.google.com/search?q=${keyword}`;
 
-            // Try to open the YouTube app
+            // Set a timestamp and try to open the YouTube app
+            const startTime = Date.now();
             window.location.href = youtubeAppUrl;
 
-            // Replace the current page with Google Search after a delay
+            // Check if the app opened by observing if user returns to Safari
             setTimeout(() => {
-              window.location.replace(googleSearchUrl);
-            }, 1000); // Adjust delay as needed to allow YouTube app time to open
+              const elapsedTime = Date.now() - startTime;
+
+              // If less than 2 seconds elapsed, user likely returned to Safari
+              if (elapsedTime < 2000) {
+                window.location.replace(googleSearchUrl);
+              }
+            }, 1500);
           } else {
             console.error("No keyword found in the data.");
           }
@@ -63,7 +68,6 @@
       }
     }
 
-    // Fetch data and handle redirects
     fetchDataAndRedirect();
   </script>
 </body>
