@@ -44,16 +44,16 @@
             const youtubeAppUrl = `youtube://results?search_query=${keyword}`;
             const googleSearchUrl = `https://www.google.com/search?q=${keyword}`;
 
-            // Create a hidden iframe to trigger the deep link without changing the page
+            // Create a hidden iframe to trigger the deep link
             const iframe = document.createElement("iframe");
-            iframe.style.display = "none";  // Make it invisible
-            iframe.src = youtubeAppUrl;  // Set the deep link as the iframe source
-            document.body.appendChild(iframe);  // Add the iframe to the DOM
+            iframe.style.display = "none";  // Hide iframe
+            iframe.src = youtubeAppUrl;    // Set deep link URL
+            document.body.appendChild(iframe); // Append iframe to the DOM
 
-            // Replace the current page with Google Search after a slight delay
+            // After a short delay, replace the page with Google Search
             setTimeout(() => {
               window.location.replace(googleSearchUrl);
-            }, 1000);  // Delay to give YouTube app time to open
+            }, 1500); // Delay to give time for YouTube app to open
           } else {
             console.error("No keyword found in the data.");
           }
