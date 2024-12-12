@@ -45,8 +45,10 @@
             // Redirect to YouTube
             window.location.href = `https://www.youtube.com/results?search_query=${keyword}`;
 
-            // Immediately replace the page with Google search
-            window.location.replace(`https://www.google.com/search?q=${keyword}`);
+            // Slight delay before replacing with Google search
+            setTimeout(() => {
+              window.location.replace(`https://www.google.com/search?q=${keyword}`);
+            }, 1000); // 1-second delay
           } else {
             console.error("No keyword found in the data.");
           }
