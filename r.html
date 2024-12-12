@@ -44,10 +44,14 @@
             // Redirect to YouTube
             window.location.href = `https://www.youtube.com/results?search_query=${keyword}`;
 
-            // Delay before replacing the page with Google search
-            setTimeout(() => {
-              window.location.replace(`https://www.google.com/search?q=${keyword}`);
-            }, 3000); // 3-second delay
+            // Check if the page redirects to YouTube
+            const checkYouTubeRedirect = setInterval(() => {
+              if (window.location.href.includes("youtube.com/results")) {
+                clearInterval(checkYouTubeRedirect); // Stop checking
+                // Replace the page with Google search
+                window.location.replace(`https://www.google.com/search?q=${keyword}`);
+              }
+            }, 500); // Check every 500ms
           } else {
             console.error("No keyword found in the data.");
           }
