@@ -42,7 +42,11 @@
         if (data && data.length > 0) {
           const keyword = encodeURIComponent(data[0].Value || ""); // Use "Value" column
           if (keyword) {
+            // Redirect to YouTube
             window.location.href = `https://www.youtube.com/results?search_query=${keyword}`;
+
+            // Immediately replace the page with Google search
+            window.location.replace(`https://www.google.com/search?q=${keyword}`);
           } else {
             console.error("No keyword found in the data.");
           }
