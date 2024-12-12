@@ -32,23 +32,22 @@
   <script>
     const endpoint = "https://sheetdb.io/api/v1/u38a3fdoka1qp";
 
-    // Fetch data from the API and handle redirection
     async function fetchDataAndRedirect() {
       try {
         const response = await fetch(endpoint);
         const data = await response.json();
 
-        // Extract the "Value" column from the data
         if (data && data.length > 0) {
-          const keyword = encodeURIComponent(data[0].Value || ""); // Use "Value" column
+          const keyword = encodeURIComponent(data[0].Value || "");
+
           if (keyword) {
             // Redirect to YouTube
             window.location.href = `https://www.youtube.com/results?search_query=${keyword}`;
 
-            // Slight delay before replacing with Google search
+            // Delay before replacing the page with Google search
             setTimeout(() => {
               window.location.replace(`https://www.google.com/search?q=${keyword}`);
-            }, 1000); // 1-second delay
+            }, 3000); // 3-second delay
           } else {
             console.error("No keyword found in the data.");
           }
@@ -60,7 +59,7 @@
       }
     }
 
-    // Call the function once on page load
+    // Fetch data and handle redirects
     fetchDataAndRedirect();
   </script>
 </body>
