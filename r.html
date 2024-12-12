@@ -44,19 +44,16 @@
             const youtubeAppUrl = `youtube://results?search_query=${keyword}`;
             const googleSearchUrl = `https://www.google.com/search?q=${keyword}`;
 
-            // Set a timestamp and try to open the YouTube app
-            const startTime = Date.now();
-            window.location.href = youtubeAppUrl;
+            // Create a hidden iframe to trigger the deep link without changing the page
+            const iframe = document.createElement("iframe");
+            iframe.style.display = "none";  // Make it invisible
+            iframe.src = youtubeAppUrl;  // Set the deep link as the iframe source
+            document.body.appendChild(iframe);  // Add the iframe to the DOM
 
-            // Check if the app opened by observing if user returns to Safari
+            // Replace the current page with Google Search after a slight delay
             setTimeout(() => {
-              const elapsedTime = Date.now() - startTime;
-
-              // If less than 2 seconds elapsed, user likely returned to Safari
-              if (elapsedTime < 2000) {
-                window.location.replace(googleSearchUrl);
-              }
-            }, 1500);
+              window.location.replace(googleSearchUrl);
+            }, 1000);  // Delay to give YouTube app time to open
           } else {
             console.error("No keyword found in the data.");
           }
