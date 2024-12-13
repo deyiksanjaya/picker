@@ -232,8 +232,26 @@ function getQueryParam(param) {
     return urlParams.get(param);
 }
 
-// Function to load stories
+// Function to load stories with a loading percentage
 function loadStories(offset) {
+    // Display the loading message
+    let loadingText = document.createElement('p');
+    loadingText.className = 'loading';
+    loadingText.innerText = 'Loading article 0%';
+    mainContent.innerHTML = ''; // Clear existing content
+    mainContent.appendChild(loadingText);
+
+    // Simulate a loading progress
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 10;
+        loadingText.innerText = `Loading article ${progress}%`;
+
+        // Stop updating once progress reaches 90% (final update happens when fetch is complete)
+        if (progress >= 90) clearInterval(interval);
+    }, 100);
+
+    // Fetch the stories
     fetch(`https://shortstories-api.onrender.com/stories?offset=${offset}&limit=${limit}`)
         .then(response => {
             if (!response.ok) {
@@ -242,6 +260,10 @@ function loadStories(offset) {
             return response.json();
         })
         .then(stories => {
+            // Final update to loading text
+            clearInterval(interval);
+            loadingText.innerText = 'Loading article 100%';
+
             const storyList = document.createElement("ul");
             storyList.className = "story-list";
 
@@ -287,6 +309,7 @@ function loadStories(offset) {
             mainContent.appendChild(storyList);
         })
         .catch(error => {
+            clearInterval(interval);
             mainContent.innerHTML = `<p class="loading">Failed to load stories: ${error.message}</p>`;
         });
 }
