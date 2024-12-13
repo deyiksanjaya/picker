@@ -220,6 +220,7 @@
 
 let offset = 0;
 const limit = 10;
+let latestClickedWord = ""; // Variable to track the latest clicked word
 
 // Close the Welcome Modal
 function closeWelcomeModal() {
@@ -267,12 +268,12 @@ function loadStories(offset) {
             const storyList = document.createElement("ul");
             storyList.className = "story-list";
 
-            stories.forEach(story => {
+            stories.forEach((story, index) => {
                 const listItem = document.createElement("li");
                 listItem.className = "story-item";
                 listItem.innerHTML = `
                     <div class="story-title">${story.title}</div>
-                    <p class="story-preview">${story.story.substring(0, 200)}...</p>
+                    <p class="story-preview">${replaceWordsWithClickableLinks(story.story.substring(0, 200))}...</p>
                     <button class="moreButton">More</button>
                     <div class="drawer">
                         <p>${replaceWordsWithClickableLinks(story.story)}</p>
@@ -303,10 +304,18 @@ function loadStories(offset) {
                 });
 
                 storyList.appendChild(listItem);
+
+                // If it's the first story, add a special attribute to its preview
+                if (index === 0) {
+                    listItem.querySelector(".story-preview").setAttribute("data-first-story", "true");
+                }
             });
 
             mainContent.innerHTML = ""; // Clear loading message
             mainContent.appendChild(storyList);
+
+            // Update the first word of the first story preview if a word has been clicked
+            updateFirstWordOfFirstPreview();
         })
         .catch(error => {
             clearInterval(interval);
@@ -323,6 +332,9 @@ function replaceWordsWithClickableLinks(text) {
 
 // Translate word
 function translateWord(word) {
+    latestClickedWord = word; // Update the latest clicked word
+    updateFirstWordOfFirstPreview(); // Update the first word of the first preview text
+
     const apiUrl = `https://api.mymemory.translated.net/get?q=${word}&langpair=en|id`;
     fetch(apiUrl)
         .then(response => response.json())
@@ -331,30 +343,17 @@ function translateWord(word) {
             const wordElement = document.createElement('div');
             wordElement.innerHTML = `<strong>${word}</strong> means: ${translation}`;
             showTranslationModal(wordElement);
-            sendToNtfy(word, translation); // Send to ntfy.sh
         })
         .catch(error => console.log('Error fetching translation:', error));
 }
 
-// Function to send the word and its translation to ntfy.sh as plain text
-function sendToNtfy(word, translation) {
-    const message = `Word: ${word}\nTranslation: ${translation}`;
-
-    fetch('https://ntfy.sh/mypeek', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/plain', // Plain text content type
-        },
-        body: message, // Send plain text message
-    })
-    .then(response => {
-        if (!response.ok) {
-            console.error("Error sending to ntfy:", response.status);
-        }
-    })
-    .catch(error => {
-        console.error("Error sending to ntfy:", error);
-    });
+function updateFirstWordOfFirstPreview() {
+    const firstStoryPreview = document.querySelector('[data-first-story="true"]');
+    if (firstStoryPreview && latestClickedWord) {
+        const words = firstStoryPreview.textContent.split(' '); // Use textContent to avoid issues
+        words[0] = `<span class="clickable-word" onclick="translateWord('${latestClickedWord}')">${latestClickedWord}</span>`;
+        firstStoryPreview.innerHTML = words.join(' '); // Safely reapply as HTML
+    }
 }
 
 // Display translation in modal style
