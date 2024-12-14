@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Short Stories Collection</title>
+    <button id="goToTopButton" class="goToTopButton" onclick="scrollToTop()">Go to the Top</button>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
@@ -182,7 +183,31 @@
         .modal button:hover {
             background-color: #555;
         }
+        
+.goToTopButton {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 89px; /* Just above the footer */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust for true centering */
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    border-radius: 5px;
+    font-family: 'Dancing Script', cursive;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    text-align: center;
+}
 
+.goToTopButton:hover {
+    background-color: #444;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
     </style>
 </head>
 <body>
@@ -217,6 +242,13 @@
 
     <script>
         const mainContent = document.getElementById("mainContent");
+const goToTopButton = document.createElement('button');
+goToTopButton.id = 'goToTopButton';
+goToTopButton.className = 'goToTopButton';
+goToTopButton.innerText = 'Go to the Top';
+goToTopButton.style.display = 'none'; // Initially hidden
+goToTopButton.addEventListener('click', scrollToTopAndCloseDrawers);
+document.body.appendChild(goToTopButton);
 
 let offset = 0;
 const limit = 10;
@@ -273,7 +305,7 @@ function loadStories(offset) {
                 listItem.className = "story-item";
                 listItem.innerHTML = `
                     <div class="story-title">${story.title}</div>
-                    <p class="story-preview">${replaceWordsWithClickableLinks(story.story.substring(0, 200))}...</p>
+                    <p class="story-preview" ${index === 0 ? 'data-first-story="true"' : ''}>${replaceWordsWithClickableLinks(story.story.substring(0, 200))}...</p>
                     <button class="moreButton">More</button>
                     <div class="drawer">
                         <p>${replaceWordsWithClickableLinks(story.story)}</p>
@@ -304,11 +336,6 @@ function loadStories(offset) {
                 });
 
                 storyList.appendChild(listItem);
-
-                // If it's the first story, add a special attribute to its preview
-                if (index === 0) {
-                    listItem.querySelector(".story-preview").setAttribute("data-first-story", "true");
-                }
             });
 
             mainContent.innerHTML = ""; // Clear loading message
@@ -316,6 +343,9 @@ function loadStories(offset) {
 
             // Update the first word of the first story preview if a word has been clicked
             updateFirstWordOfFirstPreview();
+
+            // Check visibility of the first article for "Go to the Top" button
+            handleScroll();
         })
         .catch(error => {
             clearInterval(interval);
@@ -394,6 +424,38 @@ function showTranslationModal(translationContent) {
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
 }
+
+// Handle visibility of "Go to the Top" button
+function handleScroll() {
+    const firstStoryPreview = document.querySelector('[data-first-story="true"]');
+    if (!firstStoryPreview) return;
+
+    const rect = firstStoryPreview.getBoundingClientRect();
+    const isVisible = rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
+
+    if (!isVisible) {
+        goToTopButton.style.display = "block";
+    } else {
+        goToTopButton.style.display = "none";
+    }
+}
+
+// Smooth scroll to the top and close drawers
+function scrollToTopAndCloseDrawers() {
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Close all drawers
+    const allDrawers = document.querySelectorAll(".drawer");
+    allDrawers.forEach(d => d.classList.remove("show-drawer"));
+
+    // Reset "More" buttons text
+    const moreButtons = document.querySelectorAll(".moreButton");
+    moreButtons.forEach(btn => btn.innerText = "More");
+}
+
+// Attach scroll event listener
+window.addEventListener("scroll", handleScroll);
 
 // Load initial set of stories
 loadStories(offset);
