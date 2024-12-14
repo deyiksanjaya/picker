@@ -3,134 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PICKER : Help You Decide</title>
+    <title>PICKER : Pick, Play, Learn</title>
     
     <!-- Link to Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
-        /* Basic Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    /* Basic Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        /* Body Styling */
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: 'Poppins', sans-serif;
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-            padding: 2rem;
-        }
+    /* Body Styling */
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: 'Poppins', sans-serif;
+        background-color: #1a1a1a; /* Dark gray */
+        color: #e0e0e0; /* Light gray */
+        position: relative;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-        /* Title Styling */
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            color: #d67f43; /* Warm earthy accent color */
-            text-align: center;
-        }
+    /* Header Container */
+    .header-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #1a1a1a; /* Same as body background */
+        padding: 1rem;
+        color: #ffffff; /* White for title */
+        font-size: 1.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        border-bottom: 1px solid #333; /* Subtle border for separation */
+    }
 
-        /* Menu Container */
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            width: 100%;
-            max-width: 600px;
-            align-items: center;
-        }
+    .title {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
 
-        /* Thumbnail Styling */
-        .thumbnail {
-            width: 100%;
-            max-width: 350px;
-            background-color: #2a2a2a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
+    /* Footer Container */
+    .footer-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #1a1a1a; /* Same as body background */
+        padding: 1rem;
+        color: #999; /* Medium gray */
+        font-size: 0.9rem;
+        text-align: center;
+        border-top: 1px solid #333; /* Subtle border for separation */
+    }
 
-        .thumbnail:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
-        }
+    /* Main content area */
+    .main-content {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 80px;  /* Prevent overlap with fixed header */
+        padding-bottom: 80px; /* Prevent overlap with fixed footer */
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+    }
 
-        .thumbnail img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-bottom: 3px solid #d67f43; /* Earthy accent color */
-        }
+    /* Slider Menu Styling */
+    .menu-wrapper {
+        overflow: hidden;
+        width: 100%;
+        max-width: 600px;
+        position: relative;
+    }
 
-        .thumbnail-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            padding: 1rem;
-            text-align: center;
-            color: #e0e0e0;
-        }
+    .menu {
+        display: flex;
+        transition: transform 0.3s ease-in-out;
+        width: 100%;
+    }
 
-        /* Footer */
-        footer {
-            margin-top: 3rem;
-            font-size: 0.9rem;
-            color: #a0a0a0;
-        }
-    </style>
+    .menu-item {
+        flex: 0 0 100%; /* Ensure each item takes full width of the menu */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .thumbnail {
+        width: 100%;
+        max-width: 350px;
+        background-color: #333; /* Medium gray */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5); /* Subtle shadow */
+        overflow: hidden;
+        text-decoration: none;
+        color: #e0e0e0; /* Light gray text */
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .thumbnail:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7); /* Deeper shadow on hover */
+    }
+
+    .thumbnail img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-bottom: 3px solid #444; /* Dark gray border */
+    }
+
+    .thumbnail-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        padding: 1rem;
+        text-align: center;
+        color: #e0e0e0; /* Light gray text */
+    }
+
+    /* Navigation Buttons */
+    .slider-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .slider-button {
+        background-color: transparent;
+        border: none;
+        font-size: 2rem;
+        color: #e0e0e0; /* Light gray */
+        cursor: pointer;
+        padding: 1rem;
+    }
+
+    .slider-button:hover {
+        color: #fff; /* Brighten color on hover */
+    }
+</style>
 </head>
 <body>
 
-    <h1>PICKER : Help You Decide</h1>
-    
-    <div class="menu">
-    
-    <!-- Pick3R -->
-        <a href="https://picker.my.id/go" class="thumbnail">
-            <img src="https://i.ibb.co.com/xJ6SLT1/IMG-7555.jpg" alt="List Randomizer">
-            <div class="thumbnail-title">PICK3R</div>
-        </a>
-    
-        <!-- 2D Dice -->
-        <a href="https://picker.my.id/numbers" class="thumbnail">
-            <img src="https://i.ibb.co.com/1JrCv6r/IMG-7552.jpg" alt="2D Dice">
-            <div class="thumbnail-title">2D Dice</div>
-        </a>
-
-        <!-- 2D Dice Advance -->
-        <a href="https://picker.my.id/numbers?id=mypeek" class="thumbnail">
-            <img src="https://i.ibb.co.com/VHc5dZ7/IMG-7550.jpg" alt="2D Dice Advance">
-            <div class="thumbnail-title">2D Dice Advance</div>
-        </a>
-
-        <!-- List Randomizer -->
-        <a href="https://picker.my.id/list" class="thumbnail">
-            <img src="https://i.ibb.co.com/881wXLv/IMG-7551.jpg" alt="List Randomizer">
-            <div class="thumbnail-title">List Randomizer</div>
-        </a>
-    
-    <!-- Tic Tac Toe -->
-        <a href="https://picker.my.id/tic" class="thumbnail">
-            <img src="https://i.ibb.co.com/9q80BWY/IMG-7797.jpg" alt="List Randomizer">
-            <div class="thumbnail-title">Tic Tac Toe</div>
-        </a>
+    <!-- Header Container -->
+    <div class="header-container">
+        <div class="title">PICKER : Pick, Play, Learn</div>
     </div>
 
-    <footer>&copy; <span id="year"></span> PICKER. All rights reserved.</footer>
+    <div class="main-content">
+        <div class="menu-wrapper">
+            <div class="menu">
+                <!-- Stories -->
+                <div class="menu-item">
+                    <a href="https://picker.my.id/stories" class="thumbnail">
+                        <img src="https://i.ibb.co.com/0rvCjyn/advance.png" alt="List Randomizer">
+                        <div class="thumbnail-title">Stories : Learn Vocab</div>
+                    </a>
+                </div>
+
+                <!-- 2D Dice Advance -->
+                <div class="menu-item">
+                    <a href="https://picker.my.id/numbers?id=mypeek" class="thumbnail">
+                        <img src="https://i.ibb.co.com/VHc5dZ7/IMG-7550.jpg" alt="2D Dice Advance">
+                        <div class="thumbnail-title">2D Dice Advance</div>
+                    </a>
+                </div>
+
+                <!-- List Randomizer -->
+                <div class="menu-item">
+                    <a href="https://picker.my.id/list" class="thumbnail">
+                        <img src="https://i.ibb.co.com/881wXLv/IMG-7551.jpg" alt="List Randomizer">
+                        <div class="thumbnail-title">List Randomizer</div>
+                    </a>
+                </div>
+
+                <!-- Tic Tac Toe -->
+                <div class="menu-item">
+                    <a href="https://picker.my.id/tic" class="thumbnail">
+                        <img src="https://i.ibb.co.com/9q80BWY/IMG-7797.jpg" alt="List Randomizer">
+                        <div class="thumbnail-title">Tic Tac Toe</div>
+                    </a>
+                </div>
+            </div>
+            <!-- Navigation Buttons -->
+            <div class="slider-buttons">
+                <button class="slider-button prev" onclick="moveSlider(-1)">&#10094;</button>
+                <button class="slider-button next" onclick="moveSlider(1)">&#10095;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Container -->
+    <div class="footer-container">
+        &copy; <span id="year"></span> PICKER. All rights reserved.
+    </div>
 
     <script>
         // Set the current year in the footer
         document.getElementById("year").textContent = new Date().getFullYear();
+
+        let currentSlide = 0;
+
+        function moveSlider(direction) {
+            const menu = document.querySelector('.menu');
+            const totalSlides = document.querySelectorAll('.menu-item').length;
+            const slideWidth = document.querySelector('.menu-item').offsetWidth; // Calculate the width of each slide
+            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+            menu.style.transform = `translateX(-${currentSlide * slideWidth}px)`; // Move by slide width
+        }
     </script>
     
 </body>
