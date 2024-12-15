@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trapdoors</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #121212; /* Dark background */
+      color: #e0e0e0; /* Light gray text */
+      margin: 0;
+    }
+
+    header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #1f1f1f; /* Darker header */
+      color: #e0e0e0;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+    }
+
+    header button {
+      background: none;
+      border: none;
+      color: #e0e0e0;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    header button:hover {
+      color: #f8f9fa;
+    }
+
+    header svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+      background-color: #121212; /* Match body background */
+      border-radius: 12px;
+      text-align: center;
+      margin-top: 80px;
+      padding-left: 40px; /* Add left padding */
+      padding-right: 40px; /* Add right padding */
+    }
+
+    #grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.5s ease;
+    }
+
+    .cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 60px;
+      height: 60px;
+      background-color: #333333; /* Dark gray cells */
+      font-size: 24px;
+      color: #e0e0e0; /* Light gray text in cells */
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .cell:hover {
+      background-color: #444444; /* Slightly lighter gray on hover */
+      transform: scale(1.1);
+    }
+    .cell.glow {
+  animation: glowEffect 1s forwards;
+}
+
+@keyframes glowEffect {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0); /* Initial state: no glow */
+  }
+  100% {
+    box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.8); /* Final state: glowing */
+  }
+}
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6c757d; /* Light gray for footer text */
+    }
+
+    #inputArea input,
+    #inputArea button {
+      font-size: 1rem;
+      padding: 12px;
+      margin: 10px 0;
+      border: 2px solid #444444; /* Darker border */
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    #inputArea input:focus,
+    #inputArea button:focus {
+      border-color: #888888; /* Lighter gray on focus */
+    }
+
+    #inputArea button {
+      background-color: #444444; /* Dark gray button */
+      color: #e0e0e0;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+
+    #inputArea button:hover {
+      background-color: #555555; /* Slightly lighter gray on hover */
+    }
+    
+    #startButton {
+  margin-top: 40px; /* Adjust the value as needed for more or less space */
+}
+
+    #winnerMessage {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #28a745; /* Green text for the winner */
+    }
+    
+    
+.game-icon {
+  width: 200px;  /* Set the width to 25px */
+  height: 200px; /* Set the height to 25px */
+  margin-bottom: 10px; /* Space between the image and the input box */
+}
+
+#grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  gap: 5px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.grid-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #000;
+  height: 50px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="home-icon" id="home">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+    </svg>
+  </button>
+  <h1>TRAPDOORS</h1>
+  <button id="burger">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+    </svg>
+  </button>
+</header>
+
+<main>
+  <img src="https://i.ibb.co.com/GTktGfT/IMG-8394.png" alt="Game Icon" class="game-icon">
+  <div id="inputArea">
+    <input type="number" id="playerInput" placeholder="Enter number of players" min="1">
+    <!-- Move the grid below the input field but before the start button -->
+    <div id="grid"></div>
+    <br>
+    <button id="startButton">Start Game</button>
+  </div>
+  <p id="winnerMessage"></p>
+</main>
+
+<script>
+const playerInput = document.getElementById('playerInput');
+const startButton = document.getElementById('startButton');
+const grid = document.getElementById('grid');
+const winnerMessage = document.getElementById('winnerMessage');
+
+playerInput.addEventListener('input', updateGrid);
+startButton.addEventListener('click', () => {
+  if (gameFinished) {
+    resetGame(); // Reset the game if it's finished
+  } else {
+    startGame(); // Start the game if it's not finished
+  }
+});
+
+let winner = null;
+let gameFinished = false;
+
+function updateGrid() {
+  let numPlayers = parseInt(playerInput.value);
+  
+  // Check if input exceeds 20
+  if (numPlayers > 20) {
+    alert('The number of players cannot exceed 20!');
+    playerInput.value = 20;  // Set the value to 20 to prevent invalid input
+    numPlayers = 20;  // Ensure the number of players is 20 or below
+  }
+  
+  if (isNaN(numPlayers) || numPlayers < 1) return;
+
+  // Dynamically generate the grid based on the input
+  const size = Math.ceil(Math.sqrt(numPlayers));
+  grid.style.gridTemplateColumns = `repeat(${size}, 60px)`;
+  grid.innerHTML = ''; // Clear the previous grid
+
+  const numbers = Array.from({ length: numPlayers }, (_, i) => i + 1);
+
+  numbers.forEach(num => {
+    const cell = document.createElement('div');
+    cell.classList.add('cell');
+    cell.textContent = num;
+    grid.appendChild(cell);
+  });
+}
+
+function startGame() {
+  let numPlayers = parseInt(playerInput.value);
+  
+  // Check if input exceeds 20
+  if (numPlayers > 20) {
+    alert('The number of players cannot exceed 20!');
+    playerInput.value = 20;  // Set the value to 20 to prevent invalid input
+    numPlayers = 20;  // Ensure the number of players is 20 or below
+  }
+
+  if (isNaN(numPlayers) || numPlayers < 1) return;
+
+  // Disable the input field
+  playerInput.disabled = true;
+
+  // Calculate the winner using the Josephus formula
+  winner = josephus(numPlayers);
+
+  // Start the elimination process
+  const numbers = Array.from({ length: numPlayers }, (_, i) => i + 1);
+  startElimination(numbers);
+
+  // Change the button text to "Reset Game"
+  startButton.textContent = 'Reset Game';
+  gameFinished = true;
+}
+
+// Josephus function to calculate the winner
+function josephus(n) {
+  let winner = 0; // Initial winner is 0 (0-indexed)
+
+  // Calculate the winner using the Josephus formula
+  for (let i = 2; i <= n; i++) {
+    winner = (winner + 2) % i;
+  }
+
+  return winner + 1; // Convert to 1-indexed result
+}
+
+function startElimination(numbers) {
+  const cells = document.querySelectorAll('.cell');
+  let remainingCells = [...cells];
+
+  // Shuffle the order of remaining cells for randomness
+  shuffle(remainingCells);
+
+  const interval = setInterval(() => {
+    if (remainingCells.length === 1) {
+      // Get the winner's cell
+      const winnerCell = remainingCells[0];
+
+      // Add the glow effect class to the winner's cell
+      winnerCell.classList.add('glow');
+      
+      // Announce the winner
+      speak(`Congratulations, number ${winnerCell.textContent} is safe from being killed.`);
+      clearInterval(interval);
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * remainingCells.length);
+    const cell = remainingCells[randomIndex];
+
+    if (parseInt(cell.textContent) === winner) return;
+
+    // Announce the elimination
+    speak(`The player who chose these numbers will be killed: ${cell.textContent}`);
+    
+    // Replace the number with a red X
+    cell.textContent = '❌';
+    remainingCells = remainingCells.filter(c => c !== cell);
+  }, 1000); // Fixed interval for eliminations
+}
+
+// Shuffle function to randomize the order of remaining cells
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+  }
+}
+
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  window.speechSynthesis.speak(utterance);
+}
+
+function resetGame() {
+  // Clear the grid
+  grid.innerHTML = '';
+  winnerMessage.textContent = '';
+
+  // Reset button text back to "Start Game"
+  startButton.textContent = 'Start Game';
+  
+  // Reset game state
+  gameFinished = false;
+
+  // Re-enable the input field
+  playerInput.disabled = false;
+
+  // Clear player input
+  playerInput.value = '';
+}
+</script>
+</body>
+</html>
