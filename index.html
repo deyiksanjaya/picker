@@ -70,39 +70,48 @@
     .main-content {
         flex-grow: 1;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
-        padding-top: 80px;  /* Prevent overlap with fixed header */
-        padding-bottom: 80px; /* Prevent overlap with fixed footer */
+        padding-top: 70px;  /* Prevent overlap with fixed header */
+        padding-bottom: 100px; /* Prevent overlap with fixed footer */
         width: 100%;
-        overflow: hidden;
-        position: relative;
+        overflow-y: auto;
     }
 
-    /* Slider Menu Styling */
-    .menu-wrapper {
-        overflow: hidden;
-        width: 100%;
-        max-width: 600px;
-        position: relative;
-    }
-
-    .menu {
-        display: flex;
-        transition: transform 0.3s ease-in-out;
+    /* Section Styling */
+    .section {
+        margin: 2.5rem 0; /* Increased margin for spacing between sections */
+        text-align: center;
         width: 100%;
     }
 
-    .menu-item {
-        flex: 0 0 100%; /* Ensure each item takes full width of the menu */
+    .section-title {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 0.7rem;
+        color: #ffffff;
+    }
+
+    /* Thin Line */
+    hr {
+        border: none;
+        height: 1px;
+        background-color: #444; /* Subtle gray line */
+        margin: 2rem 0; /* Space above and below the line */
+        width: 80%;
+    }
+
+    /* Thumbnails Grid */
+    .menu-grid {
         display: flex;
         justify-content: center;
-        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
     }
 
     .thumbnail {
         width: 100%;
-        max-width: 350px;
+        max-width: 300px;
         background-color: #333; /* Medium gray */
         display: flex;
         flex-direction: column;
@@ -135,26 +144,6 @@
         color: #e0e0e0; /* Light gray text */
     }
 
-    /* Navigation Buttons */
-    .slider-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-
-    .slider-button {
-        background-color: transparent;
-        border: none;
-        font-size: 2rem;
-        color: #e0e0e0; /* Light gray */
-        cursor: pointer;
-        padding: 1rem;
-    }
-
-    .slider-button:hover {
-        color: #fff; /* Brighten color on hover */
-    }
 </style>
 </head>
 <body>
@@ -164,65 +153,60 @@
         <div class="title">PICKER : Pick, Play, Learn</div>
     </div>
 
+    <!-- Main Content -->
     <div class="main-content">
-        <div class="menu-wrapper">
-            <div class="menu">
-            
-            <!-- Trapdoors -->
-                <div class="menu-item">
-                    <a href="https://picker.my.id/trapdoors" class="thumbnail">
-                        <img src="https://i.ibb.co.com/Cv17VDH/9-B2279-AB-ECC2-45-AA-9874-232-B3-FD8-D443.png" alt="List Randomizer">
-                        <div class="thumbnail-title">Trapdoors</div>
-                    </a>
-                </div>
-                
-                <!-- draw -->
-                <div class="menu-item">
-                    <a href="https://picker.my.id/draw" class="thumbnail">
-                        <img src="https://i.ibb.co.com/C59D1tj/IMG-8414.png" alt="List Randomizer">
-                        <div class="thumbnail-title">Draw</div>
-                    </a>
-                </div>
-            
-                <!-- Stories -->
-                <div class="menu-item">
-                    <a href="https://picker.my.id/stories" class="thumbnail">
-                        <img src="https://i.ibb.co.com/0rvCjyn/advance.png" alt="List Randomizer">
-                        <div class="thumbnail-title">Stories : Learn Vocab</div>
-                    </a>
-                </div>
-
-                <!-- 2D Dice Advance -->
-                <div class="menu-item">
-                    <a href="https://picker.my.id/numbers?id=mypeek" class="thumbnail">
-                        <img src="https://i.ibb.co.com/VHc5dZ7/IMG-7550.jpg" alt="2D Dice Advance">
-                        <div class="thumbnail-title">2D Dice Advance</div>
-                    </a>
-                </div>
-
-                <!-- List Randomizer -->
-                <div class="menu-item">
-                    <a href="https://picker.my.id/list" class="thumbnail">
-                        <img src="https://i.ibb.co.com/881wXLv/IMG-7551.jpg" alt="List Randomizer">
-                        <div class="thumbnail-title">List Randomizer</div>
-                    </a>
-                </div>
-
-                <!-- Tic Tac Toe -->
-                <div class="menu-item">
-                    <a href="https://picker.my.id/tic" class="thumbnail">
-                        <img src="https://i.ibb.co.com/9q80BWY/IMG-7797.jpg" alt="List Randomizer">
-                        <div class="thumbnail-title">Tic Tac Toe</div>
-                    </a>
-                </div>
+        
+        <!-- Pick Section -->
+        <div class="section">
+            <div class="section-title">PICK 🎲</div>
+            <div class="menu-grid">
+                <a href="https://picker.my.id/list" class="thumbnail">
+                    <img src="https://i.ibb.co.com/881wXLv/IMG-7551.jpg" alt="List Randomizer">
+                    <div class="thumbnail-title">List Randomizer</div>
+                </a>
+                <a href="https://picker.my.id/numbers?id=mypeek" class="thumbnail">
+                    <img src="https://i.ibb.co.com/VHc5dZ7/IMG-7550.jpg" alt="2D Dice Advance">
+                    <div class="thumbnail-title">2D Dice</div>
+                </a>
+                <a href="https://picker.my.id/trapdoors" class="thumbnail">
+                    <img src="https://i.ibb.co.com/Cv17VDH/9-B2279-AB-ECC2-45-AA-9874-232-B3-FD8-D443.png" alt="Trapdoors">
+                    <div class="thumbnail-title">Trapdoors</div>
+                </a>
             </div>
-            <!-- Navigation Buttons -->
-            <div class="slider-buttons">
-                <button class="slider-button prev" onclick="moveSlider(-1)">&#10094;</button>
-                <button class="slider-button next" onclick="moveSlider(1)">&#10095;</button>
+        </div>
+
+        <hr>
+
+        <!-- Play Section -->
+        <div class="section">
+            <div class="section-title">PLAY 🃏</div>
+            <div class="menu-grid">
+                <a href="https://picker.my.id/tic" class="thumbnail">
+                    <img src="https://i.ibb.co.com/9q80BWY/IMG-7797.jpg" alt="Tic Tac Toe">
+                    <div class="thumbnail-title">Tic Tac Toe</div>
+                </a>
+                <a href="https://picker.my.id/draw" class="thumbnail">
+                    <img src="https://i.ibb.co.com/C59D1tj/IMG-8414.png" alt="Draw">
+                    <div class="thumbnail-title">Draw</div>
+                </a>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Learn Section -->
+        <div class="section">
+            <div class="section-title">LEARN 📖</div>
+            <div class="menu-grid">
+                <a href="https://picker.my.id/stories" class="thumbnail">
+                    <img src="https://i.ibb.co.com/0rvCjyn/advance.png" alt="Stories">
+                    <div class="thumbnail-title">Stories: Learn Vocab</div>
+                </a>
             </div>
         </div>
     </div>
+
+    <hr>
 
     <!-- Footer Container -->
     <div class="footer-container">
@@ -232,16 +216,6 @@
     <script>
         // Set the current year in the footer
         document.getElementById("year").textContent = new Date().getFullYear();
-
-        let currentSlide = 0;
-
-        function moveSlider(direction) {
-            const menu = document.querySelector('.menu');
-            const totalSlides = document.querySelectorAll('.menu-item').length;
-            const slideWidth = document.querySelector('.menu-item').offsetWidth; // Calculate the width of each slide
-            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
-            menu.style.transform = `translateX(-${currentSlide * slideWidth}px)`; // Move by slide width
-        }
     </script>
     
 </body>
