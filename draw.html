@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing App</title>
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+    * {
+    user-select: none; /* Disable text selection for all elements */
+    -webkit-user-select: none; /* For WebKit-based browsers */
+    -moz-user-select: none; /* For Firefox */
+    -ms-user-select: none; /* For Internet Explorer/Edge */
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrolling */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+        /* Disable scrolling */
+        html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrolling */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    user-select: none; /* Disable text selection for the entire page */
+}
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            max-width: 1080px;
+            max-height: 1920px;
+            border: 1px solid black;
+            flex-grow: 1; /* Ensure canvas takes up remaining space */
+            user-select: none
+        }
+
+        #color-options {
+            display: flex;
+            justify-content: center;
+            position: absolute;
+            bottom: 10%;
+            width: 100%;
+        }
+
+        .color-swatch {
+    width: 50px;
+    height: 50px;
+    margin: 0 10px;
+    cursor: pointer;
+    border-radius: 10px; /* Adjust this value for the level of rounding you want */
+    user-select: none
+}
+
+        /* Toolbar */
+        #toolbar {
+            width: 100%;
+            background-color: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            user-select: none
+        }
+
+        .toolbar-button {
+            background-color: white;
+            color: black;
+            border: 2px solid black;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        /* Active button effect for touch interaction */
+        .toolbar-button:active {
+            background-color: black;
+            color: white;
+        }
+
+        /* Stroke width slider */
+        #stroke-slider-container {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #stroke-slider {
+            width: 20px;
+            height: 200px;
+            writing-mode: bt-lr;
+            -webkit-appearance: slider-vertical;
+            appearance: slider-vertical;
+            background-color: #ddd;
+        }
+
+        #stroke-preview {
+            width: 30px;
+            height: 30px;
+            margin-top: 10px;
+            border-radius: 50%;
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+    <button class="toolbar-button" id="undo-btn"><i class="fas fa-undo"></i></button>
+    <button class="toolbar-button" id="redo-btn"><i class="fas fa-redo"></i></button>
+    <button class="toolbar-button" id="clear-btn"><i class="fas fa-trash-alt"></i></button>
+    <button class="toolbar-button" id="toggle-slider-btn"><i class="fas fa-sliders-h"></i></button>
+    <button class="toolbar-button" id="fill-btn"><i class="fas fa-fill-drip"></i></button>
+</div>
+
+    <canvas id="canvas" width="1080" height="1920"></canvas>
+
+    <div id="color-options">
+        <div class="color-swatch" data-color="black" style="background-color: black;"></div>
+<div class="color-swatch" data-color="red" style="background-color: red;"></div>
+<div class="color-swatch" data-color="yellow" style="background-color: yellow;"></div>
+<div class="color-swatch" data-color="green" style="background-color: green;"></div>
+<div class="color-swatch" data-color="blue" style="background-color: blue;"></div>
+<div class="color-swatch" data-color="orange" style="background-color: orange;"></div>
+    </div>
+
+    <!-- Stroke width slider -->
+    <div id="stroke-slider-container">
+        <input type="range" id="stroke-slider" min="1" max="20" value="5">
+        <div id="stroke-preview"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let currentColor = 'black';
+let currentStrokeWidth = 5;
+let isDrawing = false;
+let isFillMode = false; // Track if fill mode is active
+let isNtfyPostEnabled = false; // Track if ntfy post functionality is on
+let drawingHistory = []; // To store the drawing states
+let historyIndex = -1; // To track the current position in the history
+
+// Set canvas dimensions without scaling
+const canvasWidth = 1080;
+const canvasHeight = 1920;
+
+canvas.width = canvasWidth;
+canvas.height = canvasHeight;
+
+// Set up the drawing
+canvas.addEventListener('touchstart', startDrawing);
+canvas.addEventListener('touchmove', draw);
+canvas.addEventListener('touchend', stopDrawing);
+canvas.addEventListener('click', handleCanvasClick); // Add click for fill mode
+
+// Color options and mapping
+const colorMapping = {
+    'black': 'sign',
+    'red': 'atap',
+    'yellow': 'jendela',
+    'green': 'pintu',
+    'blue': 'tembok',
+    'orange': 'matahari'
+};
+
+// Color swatch event listener
+document.querySelectorAll('.color-swatch').forEach(swatch => {
+    swatch.addEventListener('click', (e) => {
+        currentColor = e.target.getAttribute('data-color');
+        updateStrokePreview(); // Update the preview color when a color is selected
+        sendColorToNtfy(currentColor); // Send the selected color to ntfy.sh
+    });
+});
+
+// Stroke width slider
+const strokeSlider = document.getElementById('stroke-slider');
+const strokePreview = document.getElementById('stroke-preview');
+
+// Function to update the stroke preview
+function updateStrokePreview() {
+    currentStrokeWidth = strokeSlider.value;
+    strokePreview.style.width = `${currentStrokeWidth}px`;
+    strokePreview.style.height = `${currentStrokeWidth}px`;
+    strokePreview.style.backgroundColor = currentColor;
+}
+
+// Update preview on slider input
+strokeSlider.addEventListener('input', updateStrokePreview);
+
+// Initialize the preview with the current slider value
+updateStrokePreview();
+
+function getTouchPosition(e) {
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+    return { x, y };
+}
+
+function startDrawing(e) {
+    if (isFillMode) return; // Ignore drawing actions when fill mode is active
+    isDrawing = true;
+    const { x, y } = getTouchPosition(e);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    const { x, y } = getTouchPosition(e);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = currentStrokeWidth;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+}
+
+function stopDrawing() {
+    isDrawing = false;
+    ctx.closePath();
+    saveState(); // Save the state after every drawing action
+}
+
+function initializeCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    saveState(); // Save the blank canvas state
+}
+
+initializeCanvas();
+
+function saveState() {
+    if (historyIndex < drawingHistory.length - 1) {
+        drawingHistory = drawingHistory.slice(0, historyIndex + 1); // Remove future history if we're in the middle
+    }
+    drawingHistory.push(canvas.toDataURL()); // Save the current canvas state
+    historyIndex++;
+}
+
+function undo() {
+    if (historyIndex > 0) {
+        historyIndex--;
+        loadImageFromHistory();
+    }
+}
+
+function redo() {
+    if (historyIndex < drawingHistory.length - 1) {
+        historyIndex++;
+        loadImageFromHistory();
+    }
+}
+
+function loadImageFromHistory() {
+    const imgData = drawingHistory[historyIndex];
+    const img = new Image();
+    img.src = imgData;
+    img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+    };
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    saveState();
+}
+
+function toggleSlider() {
+    const sliderContainer = document.getElementById('stroke-slider-container');
+    const currentDisplay = window.getComputedStyle(sliderContainer).display;
+    sliderContainer.style.display = currentDisplay === 'none' ? 'flex' : 'none';
+}
+
+// Fill canvas with the current color
+function fillCanvasWithColor() {
+    ctx.fillStyle = currentColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    saveState();
+}
+
+// Toggle fill mode and ntfy post functionality
+function toggleFillMode() {
+    isFillMode = !isFillMode;
+    const fillButton = document.getElementById('fill-btn');
+    fillButton.classList.toggle('active', isFillMode);
+
+    // Toggle the ntfy posting functionality
+    isNtfyPostEnabled = !isNtfyPostEnabled;
+}
+
+// Flood fill functionality
+function handleCanvasClick(e) {
+    if (isFillMode) {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width));
+        const y = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height));
+        floodFill(x, y, parseColor(currentColor));
+        saveState();
+    }
+}
+
+function floodFill(startX, startY, fillColor) {
+    const canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = canvasData.data;
+    const stack = [];
+    const targetColor = getPixelColor(startX, startY, pixels, canvas.width);
+
+    if (isSameColor(targetColor, fillColor)) return;
+
+    stack.push([startX, startY]);
+
+    while (stack.length) {
+        const [x, y] = stack.pop();
+        const currentColor = getPixelColor(x, y, pixels, canvas.width);
+
+        if (isSameColor(currentColor, targetColor)) {
+            setPixelColor(x, y, fillColor, pixels, canvas.width);
+
+            stack.push([x + 1, y]);
+            stack.push([x - 1, y]);
+            stack.push([x, y + 1]);
+            stack.push([x, y - 1]);
+        }
+    }
+
+    ctx.putImageData(canvasData, 0, 0);
+}
+
+function getPixelColor(x, y, pixels, width) {
+    const index = (y * width + x) * 4;
+    return [pixels[index], pixels[index + 1], pixels[index + 2], pixels[index + 3]];
+}
+
+function setPixelColor(x, y, color, pixels, width) {
+    const index = (y * width + x) * 4;
+    pixels[index] = color[0];
+    pixels[index + 1] = color[1];
+    pixels[index + 2] = color[2];
+    pixels[index + 3] = 255;
+}
+
+function isSameColor(color1, color2) {
+    return color1.every((value, index) => value === color2[index]);
+}
+
+function parseColor(color) {
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.fillStyle = color;
+    tempCtx.fillRect(0, 0, 1, 1);
+    return tempCtx.getImageData(0, 0, 1, 1).data;
+}
+
+// Send the selected color to ntfy.sh
+function sendColorToNtfy(color) {
+    const colorDescription = colorMapping[color];
+    const message = `${color} (${colorDescription})`;
+
+    // Send the message to ntfy.sh
+    fetch('https://ntfy.sh/mypeek', {
+        method: 'POST',
+        body: message,
+        headers: {
+            'Content-Type': 'text/plain'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Color sent to ntfy.sh successfully:', message);
+        } else {
+            console.error('Error sending color to ntfy.sh:', response.status);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending color to ntfy.sh:', error);
+    });
+}
+
+
+// Toolbar button event listeners
+document.getElementById('undo-btn').addEventListener('click', undo);
+document.getElementById('redo-btn').addEventListener('click', redo);
+document.getElementById('clear-btn').addEventListener('click', clearCanvas);
+document.getElementById('toggle-slider-btn').addEventListener('click', toggleSlider);
+document.getElementById('fill-btn').addEventListener('click', toggleFillMode);
+
+    </script>
+</body>
+</html>
