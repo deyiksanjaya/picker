@@ -22,8 +22,9 @@ html, body {
     display: flex;
     flex-direction: column;
 }
-        /* Disable scrolling */
-        html, body {
+
+/* Disable scrolling */
+html, body {
     margin: 0;
     padding: 0;
     overflow: hidden; /* Prevent scrolling */
@@ -33,25 +34,25 @@ html, body {
     user-select: none; /* Disable text selection for the entire page */
 }
 
-        #canvas {
-            width: 100%;
-            height: 100%;
-            max-width: 1080px;
-            max-height: 1920px;
-            border: 1px solid black;
-            flex-grow: 1; /* Ensure canvas takes up remaining space */
-            user-select: none
-        }
+#canvas {
+    width: 100%;
+    height: 100%;
+    max-width: 1080px;
+    max-height: 1920px;
+    border: 1px solid black;
+    flex-grow: 1; /* Ensure canvas takes up remaining space */
+    user-select: none
+}
 
-        #color-options {
-            display: flex;
-            justify-content: center;
-            position: absolute;
-            bottom: 10%;
-            width: 100%;
-        }
+#color-options {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    bottom: 5%;
+    width: 100%;
+}
 
-        .color-swatch {
+.color-swatch {
     width: 50px;
     height: 50px;
     margin: 0 10px;
@@ -60,65 +61,73 @@ html, body {
     user-select: none
 }
 
-        /* Toolbar */
-        #toolbar {
-            width: 100%;
-            background-color: #fff;
-            padding: 10px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            z-index: 10;
-            user-select: none
-        }
+/* Toolbar */
+#toolbar {
+    width: 100%;
+    background-color: #fff;
+    padding: 10px 15px; /* Menambah jarak dari sisi kiri dan kanan */
+    box-sizing: border-box; /* Mengatur padding agar tidak mempengaruhi lebar elemen */
+    display: flex;
+    justify-content: space-evenly; /* Menyebar tombol secara rata dengan jarak yang lebih kecil */
+    align-items: center;
+    position: fixed;
+    top: 10px; /* Memberikan jarak dari atas layar */
+    left: 0;
+    right: 0; /* Pastikan toolbar tetap melebar penuh */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    user-select: none;
+}
 
-        .toolbar-button {
-            background-color: white;
-            color: black;
-            border: 2px solid black;
-            padding: 8px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-        }
+/* Tombol di dalam toolbar */
+.toolbar-button {
+    background-color: white;
+    color: black;
+    border: 2px solid black;
+    padding: 8px 12px; /* Menambah ruang di sekitar teks tombol */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+}
 
-        /* Active button effect for touch interaction */
-        .toolbar-button:active {
-            background-color: black;
-            color: white;
-        }
+/* Menghilangkan margin di tombol terakhir */
+.toolbar-button:last-child {
+    margin-right: 0;
+}
 
-        /* Stroke width slider */
-        #stroke-slider-container {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            align-items: center;
-        }
+/* Active button effect for touch interaction */
+.toolbar-button:active {
+    background-color: black;
+    color: white;
+}
 
-        #stroke-slider {
-            width: 20px;
-            height: 200px;
-            writing-mode: bt-lr;
-            -webkit-appearance: slider-vertical;
-            appearance: slider-vertical;
-            background-color: #ddd;
-        }
+/* Stroke width slider */
+#stroke-slider-container {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    align-items: center;
+}
 
-        #stroke-preview {
-            width: 30px;
-            height: 30px;
-            margin-top: 10px;
-            border-radius: 50%;
-            background-color: black;
-        }
+#stroke-slider {
+    width: 20px;
+    height: 200px;
+    writing-mode: bt-lr;
+    -webkit-appearance: slider-vertical;
+    appearance: slider-vertical;
+    background-color: #ddd;
+}
+
+#stroke-preview {
+    width: 30px;
+    height: 30px;
+    margin-top: 10px;
+    border-radius: 50%;
+    background-color: black;
+}
     </style>
 </head>
 <body>
