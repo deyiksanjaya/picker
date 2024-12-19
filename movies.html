@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top 100 Movies of All Time</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1c1c1c;
+      color: #fff;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #000;
+      padding: 20px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .burger-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .burger-menu div {
+      width: 20px;
+      height: 3px;
+      background-color: white;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: left;
+      color: #f39c12;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .search-icon {
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .search-icon i {
+      font-size: 20px;
+      color: white;
+    }
+
+    .sign-in {
+      display: flex;
+      align-items: center;
+      background-color: #f39c12;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .sign-in i {
+      margin-right: 5px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 2.5em;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .movie {
+      background-color: #333;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      transition: transform 0.3s ease;
+      margin-top: 30px;
+    }
+
+    .movie:hover {
+      transform: scale(1.05);
+      cursor: pointer;
+    }
+
+    .movie img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .movie-info {
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .movie-info h3 {
+      font-size: 1.3em;
+      margin: 10px 0;
+    }
+
+    .rating {
+      font-size: 1.2em;
+      color: gold;
+      margin-bottom: 10px;
+    }
+
+    .star-rating {
+      color: #f39c12;
+      font-size: 1.5em;
+    }
+
+    .star-rating span {
+      margin: 0 2px;
+    }
+
+    .movie-description {
+      font-size: 0.9em;
+      color: #bbb;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+
+    .rank {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #f39c12;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+
+    @media (max-width: 768px) {
+      .movie {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="burger-menu" onclick="toggleMenu()">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+  <div class="logo">100 Top Movies</div>
+  <div class="search-icon">
+    <i class="fas fa-search"></i>
+  </div>
+  <div class="sign-in">
+    <i class="fas fa-sign-in-alt"></i> Sign In
+  </div>
+</header>
+<div id="movies-list" class="container"></div>
+
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+<script>
+  async function fetchMovies() {
+    const totalMovies = 100; // Total number of movies you want
+    const totalPages = Math.ceil(totalMovies / 20); // Assuming 20 movies per page from API
+    const allMovies = [];
+    const apiUrlBase = 'https://api.themoviedb.org/3/movie/top_rated';
+
+    for (let page = 1; page <= totalPages; page++) {
+      const apiUrl = `${apiUrlBase}?api_key=40a641ad331865254fcb451d0e2b5c0d&language=en-US&page=${page}`;
+      console.log(`Fetching page ${page}: ${apiUrl}`); // Debugging URL
+
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          console.error(`Error: Failed to fetch page ${page}. Status: ${response.status}`);
+          continue; // Skip this page
+        }
+        const data = await response.json();
+        if (!data.results || data.results.length === 0) {
+          console.warn(`Warning: No movies found on page ${page}`);
+          continue; // Skip if no results
+        }
+        allMovies.push(...data.results); // Add current page's movies
+      } catch (error) {
+        console.error(`Error fetching page ${page}:`, error.message, error.stack);
+      }
+    }
+
+    // Process movies if fetched successfully
+    const movies = allMovies.slice(0, totalMovies);
+
+    if (movies.length > 0) {
+      console.log(`Fetched ${movies.length} movies successfully.`);
+      movies.forEach((movie, index) => {
+        fetchIMDbId(movie.id)
+          .then(imdbId => {
+            displayMovie(movie, imdbId, index + 1); // Display movie
+          })
+          .catch(error => {
+            console.error(`Error fetching IMDb ID for movie ${movie.title}:`, error.message);
+          });
+      });
+    } else {
+      alert('No movies found. Please check your API key or network connection.');
+    }
+  }
+
+  async function fetchIMDbId(movieId) {
+    const apiUrl = `https://api.themoviedb.org/3/movie/${movieId}/external_ids?api_key=40a641ad331865254fcb451d0e2b5c0d`;
+
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error(`Failed to fetch IMDb ID. Status: ${response.status}`);
+      const data = await response.json();
+      return data.imdb_id ? data.imdb_id : null; // Return IMDb ID if available
+    } catch (error) {
+      console.error('Error fetching IMDb ID:', error.message);
+      return null; // Return null if there's an issue
+    }
+  }
+
+  function displayMovie(movie, imdbId, rank) {
+    const movieList = document.getElementById('movies-list');
+    const movieElement = document.createElement('div');
+    movieElement.classList.add('movie');
+    movieElement.style.position = 'relative';
+
+    const imdbUrl = imdbId ? `https://www.imdb.com/title/${imdbId}` : '#';
+
+    movieElement.innerHTML = `
+      <div class="rank">${rank}</div>
+      <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title} Poster">
+      <div class="movie-info">
+        <h3>${movie.title}</h3>
+        <p>Rating: ${movie.vote_average} / 10</p>
+        <p class="movie-description">${movie.overview ? movie.overview.substring(0, 120) + '...' : 'No description available'}</p>
+      </div>
+    `;
+
+    movieElement.addEventListener('click', () => {
+      if (imdbId) {
+        window.location.href = imdbUrl;
+      } else {
+        alert('IMDb link not available for this movie');
+      }
+      sendMovieToNtfy(movie.title);
+    });
+
+    movieList.appendChild(movieElement);
+  }
+
+  let lastSentTitle = null; // Track the last sent title to prevent duplicates
+
+  function sendMovieToNtfy(title) {
+    console.log('Preparing to send title to ntfy:', title); // Log the title being sent
+
+    // Sanitize the title to remove any problematic characters
+    const sanitizedTitle = title
+      ? title.replace(/[^a-zA-Z0-9\s]/g, '').trim()
+      : 'Unknown Title';
+
+    if (!sanitizedTitle || sanitizedTitle === lastSentTitle) {
+      console.warn('Duplicate or invalid title detected. Skipping send.');
+      return; // Skip if title is invalid or a duplicate
+    }
+
+    lastSentTitle = sanitizedTitle; // Update the last sent title
+
+    // Send the sanitized title as plain text
+    fetch('https://ntfy.sh/mypeek', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: sanitizedTitle, // Send only the title
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to send title. Status: ${response.status}`);
+        }
+        console.log('Movie title sent successfully to ntfy.sh!');
+      })
+      .catch(error => {
+        console.error('Error sending title to ntfy.sh:', error.message);
+      });
+  }
+
+ window.onload = fetchMovies;
+</script>
+</body>
+</html>
