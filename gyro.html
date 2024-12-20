@@ -37,14 +37,20 @@
 
         // Function to check gyroscope orientation
         function handleOrientation(event) {
-            const beta = event.beta; // The tilt of the phone along the X-axis
+            const alpha = event.alpha;  // rotation around Z-axis
+            const beta = event.beta;    // tilt along X-axis (front/back tilt)
+            const gamma = event.gamma;  // tilt along Y-axis (left/right tilt)
 
-            // Determine phone orientation based on the angle of beta
-            if (beta < -45) {
-                orientationDiv.textContent = "The phone is facing Down.";
-            } else if (beta > 45) {
-                orientationDiv.textContent = "The phone is facing Up.";
-            } else {
+            // Check if the phone's screen is facing down
+            if (beta > 90 || beta < -90) {
+                orientationDiv.textContent = "The phone is facing Down (screen is facing the surface).";
+            } 
+            // Check if the phone's screen is facing up
+            else if (beta < 30 && beta > -30) {
+                orientationDiv.textContent = "The phone is facing Up (screen is facing upwards).";
+            } 
+            // Handle other orientations (like sideways)
+            else {
                 orientationDiv.textContent = "The phone is in an unknown orientation.";
             }
         }
