@@ -33,12 +33,11 @@
     <script>
         const requestButton = document.getElementById('requestPermission');
         const orientationDiv = document.getElementById('orientation');
+        let isPermissionGranted = false;
 
         // Function to check gyroscope orientation
         function handleOrientation(event) {
-            const alpha = event.alpha;
-            const beta = event.beta;
-            const gamma = event.gamma;
+            const beta = event.beta; // The tilt of the phone along the X-axis
 
             // Determine phone orientation based on the angle of beta
             if (beta < -45) {
@@ -50,16 +49,44 @@
             }
         }
 
-        // Request permission and start accessing gyroscope
-        requestButton.addEventListener('click', () => {
+        // Function to request gyroscope permission
+        function requestGyroscopePermission() {
             if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientation', handleOrientation, false);
-                orientationDiv.textContent = "Permission granted. Now tilting your phone...";
+                try {
+                    // Request permission on iOS 13+ for gyroscope access
+                    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                        DeviceOrientationEvent.requestPermission()
+                            .then(permissionState => {
+                                if (permissionState === 'granted') {
+                                    isPermissionGranted = true;
+                                    orientationDiv.textContent = "Permission granted. Now tilting your phone...";
+                                    window.addEventListener('deviceorientation', handleOrientation);
+                                } else {
+                                    orientationDiv.textContent = "Permission denied for accessing gyroscope.";
+                                }
+                            })
+                            .catch(error => {
+                                orientationDiv.textContent = "Error requesting permission: " + error;
+                            });
+                    } else {
+                        // If permission request is not needed (non-iOS 13+)
+                        isPermissionGranted = true;
+                        window.addEventListener('deviceorientation', handleOrientation);
+                        orientationDiv.textContent = "Permission granted. Now tilting your phone...";
+                    }
+                } catch (error) {
+                    orientationDiv.textContent = "Error: " + error.message;
+                }
             } else {
                 orientationDiv.textContent = "Device does not support gyroscope.";
             }
+        }
+
+        // Button click event to request gyroscope access
+        requestButton.addEventListener('click', () => {
+            requestGyroscopePermission();
         });
     </script>
-    
+
 </body>
 </html>
