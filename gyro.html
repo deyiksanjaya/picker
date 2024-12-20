@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gyroscope Orientation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #orientation {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="requestPermission">Request Gyroscope Permission</button>
+    <div id="orientation"></div>
+
+    <script>
+        const requestButton = document.getElementById('requestPermission');
+        const orientationDiv = document.getElementById('orientation');
+
+        // Function to check gyroscope orientation
+        function handleOrientation(event) {
+            const alpha = event.alpha;
+            const beta = event.beta;
+            const gamma = event.gamma;
+
+            // Determine phone orientation based on the angle of beta
+            if (beta < -45) {
+                orientationDiv.textContent = "The phone is facing Down.";
+            } else if (beta > 45) {
+                orientationDiv.textContent = "The phone is facing Up.";
+            } else {
+                orientationDiv.textContent = "The phone is in an unknown orientation.";
+            }
+        }
+
+        // Request permission and start accessing gyroscope
+        requestButton.addEventListener('click', () => {
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientation', handleOrientation, false);
+                orientationDiv.textContent = "Permission granted. Now tilting your phone...";
+            } else {
+                orientationDiv.textContent = "Device does not support gyroscope.";
+            }
+        });
+    </script>
+    
+</body>
+</html>
