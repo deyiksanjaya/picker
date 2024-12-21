@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>100 Famous Figures</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #444;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      font-size: 18px;
+      z-index: 1000;
+      justify-content: space-between;
+    }
+
+    header .logo {
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    header .burger-menu {
+      display: inline-block;
+      cursor: pointer;
+      width: 30px;
+      height: 25px;
+      position: relative;
+    }
+
+    header .burger-menu span {
+      display: block;
+      width: 100%;
+      height: 4px;
+      background-color: white;
+      position: absolute;
+      left: 0;
+      transition: 0.3s;
+    }
+
+    header .burger-menu span:nth-child(1) {
+      top: 0;
+    }
+
+    header .burger-menu span:nth-child(2) {
+      top: 10px;
+    }
+
+    header .burger-menu span:nth-child(3) {
+      bottom: 0;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: #222;
+      color: #ddd;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 16px;
+      border-top: 2px solid #444;
+    }
+
+    #main-content {
+      margin-top: 60px;
+      margin-bottom: 50px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: calc(100vh - 100px);
+      border-bottom: 1px solid #ccc;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .container img {
+      max-width: 300px;
+      max-height: 300px;
+      margin-bottom: 20px;
+    }
+
+    .container .info h2 {
+      margin: 0 0 10px 0;
+    }
+
+    .highlight {
+      border: 2px solid transparent #333;
+    }
+    
+    /* Style for the Back to Top button */
+.back-to-top-btn {
+  position: fixed;
+  bottom: 60px; /* Positioned above the footer */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #444;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  display: none; /* Hidden initially */
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.back-to-top-btn:hover {
+  background-color: #666;
+}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo" id="logo">CelebInfo</div>
+    <div class="burger-menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </header>
+  <main id="main-content"></main>
+  <button id="back-to-top" class="back-to-top-btn">Back to the Top</button>
+  <footer>
+    &copy; <span id="current-year"></span> CelebInfo
+  </footer>
+
+  <script>
+    const mainContent = document.getElementById('main-content');
+    const loggedNames = new Set();  // Set to track logged names
+    let lastLoggedContainer = null;  // Track the last logged container
+
+    const celebrityNames = [
+      "Agnez Mo", "Iko Uwais", "Reza Rahadian", "Titi DJ", 
+      "Anggun", "Luna Maya", "Cinta Laura", "Nicholas Saputra", "Maudy Ayunda",
+      "Bunga Citra Lestari", "Tukul Arwana", "Eko Patrio", "Tora Sudiro", "Vino G. Bastian",
+      "Ayu Ting Ting", "Denny Cagur", "Nagita Slavina", "Raffi Ahmad", "Andre Taulany",
+      "Dian Sastrowardoyo", "Syahrini", "Melaney Ricardo",
+      "Chelsea Islan", "Chicco Jerikho", "Boy William", "Gading Marten",
+      "Andien", "Judika", "Ahmad Dhani",
+      "Via Vallen", "Isyana Sarasvati", "Melly Goeslaw", "Slank",
+      "Yuni Shara", "Anang Hermansyah", "Baim Wong",
+      "Rizky Febian",
+      "Didi Kempot", "Fatin Shidqia", "Rossa", "Afgan", "Glenn Fredly",
+      "Aurel Hermansyah", "Krisdayanti", "Betrand Peto", "Taufik Hidayat", "Pevita Pearce",
+      "Jessica Mila", "Tasya Kamila", "Yuki Kato", "Ruben Onsu", "Ivan Gunawan",
+      "Ariel Tatum", "Lesti Kejora", "Billar Rizky", "Prilly Latuconsina", "Atta Halilintar",
+      "Gen Halilintar", "Siti Badriah", "Inul Daratista", "Zaskia Gotik", "Irwan Mussry",
+      "Alyssa Soebandono", "Dude Harlino", "Teuku Wisnu", "Shireen Sungkar", "Andika Kangen Band",
+      "Ahmad Albar", "Ella Angel", "Nidji", "Glenn Alinskie", "Ussy Sulistiawaty",
+      "Cathy Sharon", "Sophia Latjuba", "Laudya Cynthia Bella", "Aming", "Marshanda",
+      "Yayan Ruhian", "Christine Hakim", "Asmirandah", "Kevin Aprilio", "Adhisty Zara"
+    ];
+
+    async function fetchCelebrityData() {
+      const observer = highlightOnScroll();
+
+      for (const name of celebrityNames) {
+        try {
+          const response = await fetch(
+            `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&titles=${encodeURIComponent(
+              name
+            )}&prop=pageimages|extracts&exintro&explaintext&piprop=thumbnail&pithumbsize=300`
+          );
+          const data = await response.json();
+          const page = Object.values(data.query.pages)[0];
+
+          if (!page.thumbnail) continue;
+
+          const container = document.createElement('div');
+          container.classList.add('container');
+
+          const img = document.createElement('img');
+          img.src = page.thumbnail?.source || 'https://via.placeholder.com/100';
+          img.alt = page.title;
+
+          const info = document.createElement('div');
+          info.classList.add('info');
+
+          const title = document.createElement('h2');
+          title.textContent = page.title;
+
+          const description = document.createElement('p');
+          description.textContent = (page.extract || 'No description available.').slice(0, 200) +
+            ((page.extract && page.extract.length > 200) ? '...' : '');
+
+          info.appendChild(title);
+          info.appendChild(description);
+          container.appendChild(img);
+          container.appendChild(info);
+          mainContent.appendChild(container);
+
+          observer.observe(container);
+        } catch (error) {
+          console.error('Error fetching data for:', name, error);
+        }
+      }
+    }
+
+    function highlightOnScroll() {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const container = entry.target;
+
+              const name = container.querySelector('h2')?.textContent;
+              if (name && !loggedNames.has(name)) {
+                loggedNames.add(name);
+                console.log(`Logged: ${name}`);
+                lastLoggedContainer = container;  // Track the last logged container
+              }
+
+              container.classList.add('highlight');
+            }
+          });
+        },
+        { threshold: 0.6 }
+      );
+
+      return observer;
+    }
+
+    // Scroll to the last logged name when the logo is clicked
+    document.getElementById('logo').addEventListener('click', () => {
+      if (lastLoggedContainer) {
+        lastLoggedContainer.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+
+    // Dynamically set the current year
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+    
+    // Select the Back to Top button
+const backToTopButton = document.getElementById('back-to-top');
+
+// Show the button when the user scrolls down 100px from the top
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 100) {
+    backToTopButton.style.display = 'block';
+  } else {
+    backToTopButton.style.display = 'none';
+  }
+});
+
+// Scroll back to the first item when the button is clicked
+backToTopButton.addEventListener('click', () => {
+  mainContent.scrollIntoView({ behavior: 'smooth' });
+});
+
+    // Initialize
+    fetchCelebrityData();
+  </script>
+</body>
+</html>
