@@ -19,6 +19,11 @@
       height: 100vh; /* Full viewport height */
       overflow: hidden;
       text-align: center;
+      user-select: none; /* Disable text selection */
+    touch-action: manipulation; /* Prevent zoom on touch */
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE */
+    -moz-user-select: none; /* Firefox */
     }
 
     .scene {
@@ -135,44 +140,122 @@
   <button id="rollButton">Roll Dice</button>
   <p id="result">Roll The Dice!</p>
 
-    <script>
-    const dice = document.getElementById('dice');
-    const rollButton = document.getElementById('rollButton');
-    const result = document.getElementById('result');
+<script>
+  const dice = document.getElementById('dice');
+  const rollButton = document.getElementById('rollButton');
+  const result = document.getElementById('result');
+  const upcomingDisplay = document.createElement('p');
+  document.body.appendChild(upcomingDisplay);
 
-    const faceMap = [
-      { x: 0, y: 0, face: 1 },
-      { x: -90, y: 0, face: 5 },
-      { x: 0, y: -90, face: 3 },
-      { x: 0, y: 90, face: 4 },
-      { x: 90, y: 0, face: 6 },
-      { x: 180, y: 0, face: 2 },
-    ];
+  // Add a small grey dot
+  const updateIndicator = document.createElement('div');
+  document.body.appendChild(updateIndicator);
+  updateIndicator.style.position = 'absolute';
+  updateIndicator.style.top = '5px';
+  updateIndicator.style.left = '5px';
+  updateIndicator.style.width = '5px';
+  updateIndicator.style.height = '5px';
+  updateIndicator.style.backgroundColor = 'grey';
+  updateIndicator.style.borderRadius = '50%';
+  updateIndicator.style.display = 'none';
 
-    rollButton.addEventListener('click', () => {
-      const randomX = Math.floor(Math.random() * 360) * 5;
-      const randomY = Math.floor(Math.random() * 360) * 5;
-      dice.style.transition = 'transform 0.5s ease-in-out';
-      dice.style.transform = `rotateX(${randomX}deg) rotateY(${randomY}deg)`;
+  // Map for dice faces
+  const faceMap = [
+    { x: 0, y: 0, face: 1 },
+    { x: -90, y: 0, face: 5 },
+    { x: 0, y: -90, face: 3 },
+    { x: 0, y: 90, face: 4 },
+    { x: 90, y: 0, face: 6 },
+    { x: 180, y: 0, face: 2 },
+  ];
+
+  // Pre-planned results queue
+  let plannedResults = generatePlannedResults();
+  let rollCount = 0;
+
+  // Generate a new set of 3 planned results ensuring they are not sequential
+function generatePlannedResults() {
+  let results = [];
+  while (results.length < 3) {
+    const newResult = faceMap[Math.floor(Math.random() * faceMap.length)];
+    // Prevent sequential numbers
+    if (results.length === 0 || Math.abs(newResult.face - results[results.length - 1].face) !== 1) {
+      results.push(newResult);
+    }
+  }
+  return results;
+}
+
+  // Update the upcoming rolls display
+  function updateUpcomingDisplay() {
+    const upcomingFaces = plannedResults.map((res) => res.face).join(", ");
+    upcomingDisplay.textContent = `${upcomingFaces}`;
+  }
+
+  // Hide the upcoming rolls initially
+  upcomingDisplay.style.display = 'none';
+  upcomingDisplay.style.fontSize = '1.5rem';
+  upcomingDisplay.style.fontWeight = 'bold';
+  upcomingDisplay.style.color = '#f0f0f0';
+
+  // Show upcoming rolls on long press
+  dice.addEventListener('mousedown', () => {
+    updateUpcomingDisplay();
+    upcomingDisplay.style.display = 'block';
+  });
+
+  // Hide upcoming rolls when the mouse button is released
+  dice.addEventListener('mouseup', () => {
+    upcomingDisplay.style.display = 'none';
+  });
+
+  // Handle touch events for mobile
+  dice.addEventListener('touchstart', () => {
+    updateUpcomingDisplay();
+    upcomingDisplay.style.display = 'block';
+  });
+
+  dice.addEventListener('touchend', () => {
+    upcomingDisplay.style.display = 'none';
+  });
+
+  // Initial planned results
+  plannedResults = generatePlannedResults();
+
+  rollButton.addEventListener('click', () => {
+    // Get the next result from the queue
+    const currentRoll = plannedResults.shift();
+    rollCount++;
+
+    // Animate random spinning
+    const randomX = Math.floor(Math.random() * 360) * 5;
+    const randomY = Math.floor(Math.random() * 360) * 5;
+    dice.style.transition = 'transform 0.5s ease-in-out';
+    dice.style.transform = `rotateX(${randomX}deg) rotateY(${randomY}deg)`;
+
+    setTimeout(() => {
+      // Display the current roll
+      dice.style.transition = 'transform 1s ease-out';
+      dice.style.transform = `rotateX(${currentRoll.x}deg) rotateY(${currentRoll.y}deg)`;
 
       setTimeout(() => {
-        const randomFace = faceMap[Math.floor(Math.random() * faceMap.length)];
-        dice.style.transition = 'transform 1s ease-out';
-        dice.style.transform = `rotateX(${randomFace.x}deg) rotateY(${randomFace.y}deg)`;
+        result.textContent = `Rolled Number: ${currentRoll.face}`;
 
-        setTimeout(() => {
-          result.textContent = `Rolled Number: ${randomFace.face}`;
+        // If 3 rolls have passed, generate new planned results
+        if (rollCount % 3 === 0) {
+          plannedResults = generatePlannedResults();
 
-          // Send rolled number to ntfy.sh
-          fetch('https://ntfy.sh/mypeek', {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: `Rolled Number: ${randomFace.face}`
-          }).then(() => console.log('Rolled number sent successfully'))
-            .catch(error => console.error('Error sending rolled number:', error));
-        }, 1000); // Ensure this executes after the animation ends
-      }, 500);
-    });
-  </script>
+          // Show the update indicator
+          updateIndicator.style.display = 'block';
+
+          // Hide the indicator after 2 seconds
+          setTimeout(() => {
+            updateIndicator.style.display = 'none';
+          }, 2000);
+        }
+      }, 1000);
+    }, 500);
+  });
+</script>
 </body>
 </html>
