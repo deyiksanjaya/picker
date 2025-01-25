@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roller</title>
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      background-color: #121212; /* Dark background */
+      color: #f0f0f0; /* Light text */
+      font-family: 'Luckiest Guy', cursive;
+      width: 100vw; /* Full viewport width */
+      height: 100vh; /* Full viewport height */
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .scene {
+      width: 150px;
+      height: 150px;
+      perspective: 800px;
+      margin-top: 100px; /* Adjust as needed */
+      margin-bottom: 40px;
+    }
+
+    .dice {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(0deg);
+      transition: transform 1s ease-out;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      border: 2px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      box-sizing: border-box;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .face.front { transform: rotateY(0deg) translateZ(75px); }
+    .face.back { transform: rotateY(180deg) translateZ(75px); }
+    .face.right { transform: rotateY(90deg) translateZ(75px); }
+    .face.left { transform: rotateY(-90deg) translateZ(75px); }
+    .face.top { transform: rotateX(90deg) translateZ(75px); }
+    .face.bottom { transform: rotateX(-90deg) translateZ(75px); }
+
+    .face { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+    .face > div { display: flex; align-items: center; justify-content: center; }
+
+    .face > div > .pip {
+      width: 15px;
+      height: 15px;
+      background: #000;
+      border-radius: 50%;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Luckiest Guy', cursive;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      margin-bottom: 30px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #result {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="dice" id="dice">
+      <div class="face front">
+        <div></div><div></div><div></div>
+        <div></div><div><div class="pip"></div></div><div></div>
+        <div></div><div></div><div></div>
+      </div>
+      <div class="face back">
+        <div><div class="pip"></div></div><div></div><div></div>
+        <div></div><div></div><div></div>
+        <div></div><div></div><div><div class="pip"></div></div>
+      </div>
+      <div class="face right">
+        <div><div class="pip"></div></div><div></div><div></div>
+        <div></div><div><div class="pip"></div></div><div></div>
+        <div></div><div></div><div><div class="pip"></div></div>
+      </div>
+      <div class="face left">
+        <div><div class="pip"></div></div><div></div><div><div class="pip"></div></div>
+        <div></div><div></div><div></div>
+        <div><div class="pip"></div></div><div></div><div><div class="pip"></div></div>
+      </div>
+      <div class="face top">
+        <div><div class="pip"></div></div><div></div><div><div class="pip"></div></div>
+        <div></div><div><div class="pip"></div></div><div></div>
+        <div><div class="pip"></div></div><div></div><div><div class="pip"></div></div>
+      </div>
+      <div class="face bottom">
+        <div><div class="pip"></div></div><div></div><div><div class="pip"></div></div>
+        <div><div class="pip"></div></div><div></div><div><div class="pip"></div></div>
+        <div><div class="pip"></div></div><div></div><div><div class="pip"></div></div>
+      </div>
+    </div>
+  </div>
+  <br>
+  <br>
+  <button id="rollButton">Roll Dice</button>
+  <p id="result">Roll The Dice!</p>
+
+    <script>
+    const dice = document.getElementById('dice');
+    const rollButton = document.getElementById('rollButton');
+    const result = document.getElementById('result');
+
+    const faceMap = [
+      { x: 0, y: 0, face: 1 },
+      { x: -90, y: 0, face: 5 },
+      { x: 0, y: -90, face: 3 },
+      { x: 0, y: 90, face: 4 },
+      { x: 90, y: 0, face: 6 },
+      { x: 180, y: 0, face: 2 },
+    ];
+
+    rollButton.addEventListener('click', () => {
+      const randomX = Math.floor(Math.random() * 360) * 5;
+      const randomY = Math.floor(Math.random() * 360) * 5;
+      dice.style.transition = 'transform 0.5s ease-in-out';
+      dice.style.transform = `rotateX(${randomX}deg) rotateY(${randomY}deg)`;
+
+      setTimeout(() => {
+        const randomFace = faceMap[Math.floor(Math.random() * faceMap.length)];
+        dice.style.transition = 'transform 1s ease-out';
+        dice.style.transform = `rotateX(${randomFace.x}deg) rotateY(${randomFace.y}deg)`;
+
+        setTimeout(() => {
+          result.textContent = `Rolled Number: ${randomFace.face}`;
+
+          // Send rolled number to ntfy.sh
+          fetch('https://ntfy.sh/mypeek', {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: `Rolled Number: ${randomFace.face}`
+          }).then(() => console.log('Rolled number sent successfully'))
+            .catch(error => console.error('Error sending rolled number:', error));
+        }, 1000); // Ensure this executes after the animation ends
+      }, 500);
+    });
+  </script>
+</body>
+</html>
