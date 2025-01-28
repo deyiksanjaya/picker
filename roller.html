@@ -174,17 +174,16 @@
   let rollCount = 0;
 
   // Generate a new set of 3 planned results ensuring they are not sequential
-function generatePlannedResults() {
-  let results = [];
-  while (results.length < 3) {
-    const newResult = faceMap[Math.floor(Math.random() * faceMap.length)];
-    // Prevent sequential numbers
-    if (results.length === 0 || Math.abs(newResult.face - results[results.length - 1].face) !== 1) {
-      results.push(newResult);
+  function generatePlannedResults() {
+    let results = [];
+    while (results.length < 3) {
+      const newResult = faceMap[Math.floor(Math.random() * faceMap.length)];
+      if (results.length === 0 || Math.abs(newResult.face - results[results.length - 1].face) !== 1) {
+        results.push(newResult);
+      }
     }
+    return results;
   }
-  return results;
-}
 
   // Update the upcoming rolls display
   function updateUpcomingDisplay() {
@@ -198,24 +197,30 @@ function generatePlannedResults() {
   upcomingDisplay.style.fontWeight = 'bold';
   upcomingDisplay.style.color = '#f0f0f0';
 
-  // Show upcoming rolls on long press
+  // Add long press functionality
+  let touchTimeout;
+
   dice.addEventListener('mousedown', () => {
-    updateUpcomingDisplay();
-    upcomingDisplay.style.display = 'block';
+    touchTimeout = setTimeout(() => {
+      updateUpcomingDisplay();
+      upcomingDisplay.style.display = 'block';
+    }, 500); // 0.5 seconds
   });
 
-  // Hide upcoming rolls when the mouse button is released
   dice.addEventListener('mouseup', () => {
+    clearTimeout(touchTimeout);
     upcomingDisplay.style.display = 'none';
   });
 
-  // Handle touch events for mobile
   dice.addEventListener('touchstart', () => {
-    updateUpcomingDisplay();
-    upcomingDisplay.style.display = 'block';
+    touchTimeout = setTimeout(() => {
+      updateUpcomingDisplay();
+      upcomingDisplay.style.display = 'block';
+    }, 200); // 0.5 seconds
   });
 
   dice.addEventListener('touchend', () => {
+    clearTimeout(touchTimeout);
     upcomingDisplay.style.display = 'none';
   });
 
