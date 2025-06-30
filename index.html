@@ -94,19 +94,6 @@
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
         }
         #tts-button.active svg { fill: #fff; }
-
-        /* --- OVERLAY UNTUK FULLSCREEN --- */
-        #fullscreen-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #000000;
-            display: none; /* Awalnya disembunyikan */
-            cursor: pointer;
-            z-index: 100;
-        }
     </style>
 </head>
 <body>
@@ -118,14 +105,13 @@
         <p id="bulan-tanya"></p>
     </div>
     
-    <!-- Tombol Speaker -->
-    <button id="tts-button" aria-label="Aktifkan Mode Suara">
+    <!-- Tombol Speaker untuk TTS -->
+    <button id="tts-button" aria-label="Aktifkan Text-to-Speech">
+        <!-- Ikon Speaker Mute (Default) -->
         <svg class="speaker-icon" id="speaker-mute-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M320 64c0-12.6-7.4-24-18.9-29.2s-25-3.1-34.4 5.3L131.8 160H48c-26.5 0-48 21.5-48 48v96c0 26.5 21.5 48 48 48h83.8l135 119.9c9.4 8.4 22.9 10.4 34.4 5.3S320 459.4 320 446.8V64zM558.7 256l47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L524.8 222.1l-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47z"/></svg>
+        <!-- Ikon Speaker On (Tersembunyi) -->
         <svg class="speaker-icon" id="speaker-on-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M301.1 34.8C312.6 40 320 51.4 320 64V448c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352H48c-26.5 0-48-21.5-48-48V208c0-26.5 21.5-48 48-48h83.8L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3zM424.6 256c0-44.2-26.8-82.4-65.9-98.8C349.8 154.4 344 147.3 344 139c0-11.6 12.3-19.8 23.2-15.3C429.3 145.4 480 196.5 480 256s-50.7 110.6-112.8 132.3c-10.9 4.5-23.2-3.7-23.2-15.3c0-8.3 5.8-15.4 14.8-18.1c39.1-16.4 65.9-54.6 65.9-98.8zM504.6 256c0-67.6-39.6-126.5-98.8-153.2c-10.9-4.9-23.6 2.3-23.6 14.5c0 8.7 6.2 16.3 15.2 19.1c49.3 15.3 85.2 62.5 85.2 119.6s-35.9 104.3-85.2 119.6c-9 2.8-15.2 10.4-15.2 19.1c0 12.2 12.7 19.4 23.6 14.5C465 382.5 504.6 323.6 504.6 256z"/></svg>
     </button>
-    
-    <!-- Elemen Overlay Hitam untuk Fullscreen -->
-    <div id="fullscreen-overlay"></div>
 
     <script type="module">
         // Impor fungsi dari Firebase
@@ -151,68 +137,32 @@
           connectDatabaseEmulator(database, "localhost", 9000);
         }
 
-        // --- SETUP TTS DAN FULLSCREEN ---
+        // --- SETUP TTS ---
         let isTtsEnabled = false; 
-        let currentText = ""; 
-        let wakeLock = null; 
-
-        // Ambil semua elemen DOM
         const ttsButton = document.getElementById('tts-button');
         const speakerOnIcon = document.getElementById('speaker-on-icon');
         const speakerMuteIcon = document.getElementById('speaker-mute-icon');
-        const overlay = document.getElementById('fullscreen-overlay');
-        const wrapper = document.getElementById('wrapper');
-        const namaBulanElem = document.getElementById('nama-bulan');
-        const zodiakElem = document.getElementById('zodiak');
-        const tanyaElem = document.getElementById('bulan-tanya');
-        const separatorLine = document.getElementById('separator-line');
+        let currentText = ""; 
+        
+        ttsButton.addEventListener('click', () => {
+            isTtsEnabled = !isTtsEnabled; 
+            ttsButton.classList.toggle('active', isTtsEnabled);
 
-        // --- PERBAIKAN UNTUK MOBILE SAFARI ---
-        // Fungsi untuk masuk ke mode imersif dengan fallback
-        async function enterImmersiveMode() {
-            const el = document.documentElement;
-            // Cari metode fullscreen yang didukung browser
-            const requestMethod = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+            speakerOnIcon.style.display = isTtsEnabled ? 'block' : 'none';
+            speakerMuteIcon.style.display = isTtsEnabled ? 'none' : 'block';
 
-            if (requestMethod) {
-                try {
-                    await requestMethod.call(el);
-                } catch (err) {
-                    console.error(`Error: Gagal masuk mode fullscreen: ${err.message}`);
+            if (isTtsEnabled) {
+                if (!currentText) {
+                    speak("voice activated");
+                } else {
+                    speak(currentText);
                 }
             } else {
-                console.warn("Fullscreen API tidak didukung browser ini.");
+                window.speechSynthesis.cancel();
             }
+        });
 
-            // Cek apakah Wake Lock didukung sebelum digunakan
-            if ('wakeLock' in navigator) {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Wake Lock diaktifkan!');
-                } catch (err) {
-                    console.error(`Gagal mengaktifkan Wake Lock: ${err.message}`);
-                }
-            }
-            overlay.style.display = 'block';
-        }
-
-        // Fungsi untuk keluar dari mode imersif dengan fallback
-        async function exitImmersiveMode() {
-            const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-
-            if (wakeLock) {
-                await wakeLock.release();
-                wakeLock = null;
-            }
-            if (document.fullscreenElement || document.webkitFullscreenElement) {
-                if (exitMethod) {
-                    await exitMethod.call(document);
-                }
-            }
-            overlay.style.display = 'none';
-        }
-
-        // Fungsi TTS
+        // Fungsi untuk membacakan teks
         function speak(text) {
             if (!text) return;
             window.speechSynthesis.cancel();
@@ -223,59 +173,17 @@
             } else {
                 utterance.lang = 'id-ID'; 
             }
-            utterance.onend = () => {
-                exitImmersiveMode();
-            };
             window.speechSynthesis.speak(utterance);
         }
 
-        // --- EVENT LISTENERS ---
-        
-        ttsButton.addEventListener('click', () => {
-            isTtsEnabled = !isTtsEnabled; 
-            ttsButton.classList.toggle('active', isTtsEnabled);
-            speakerOnIcon.style.display = isTtsEnabled ? 'block' : 'none';
-            speakerMuteIcon.style.display = isTtsEnabled ? 'none' : 'block';
-
-            if (isTtsEnabled) {
-                enterImmersiveMode();
-                if (!currentText) {
-                    speak("voice activated");
-                } else {
-                    speak(currentText);
-                }
-            } else {
-                window.speechSynthesis.cancel();
-                exitImmersiveMode();
-            }
-        });
-
-        overlay.addEventListener('click', () => {
-            exitImmersiveMode();
-        });
-
-        // Fungsi untuk menyinkronkan UI saat keluar dari fullscreen
-        function syncUiOnExit() {
-            if (isTtsEnabled) {
-                isTtsEnabled = false;
-                ttsButton.classList.remove('active');
-                speakerOnIcon.style.display = 'none';
-                speakerMuteIcon.style.display = 'block';
-                window.speechSynthesis.cancel();
-                if (wakeLock) {
-                    wakeLock.release().then(() => { wakeLock = null; });
-                }
-                overlay.style.display = 'none';
-            }
-        }
-        
-        // Tambahkan event listener dengan prefix untuk cross-browser
-        document.addEventListener('fullscreenchange', syncUiOnExit);
-        document.addEventListener('webkitfullscreenchange', syncUiOnExit);
-
-
         // --- Logika Utama Firebase ---
         const karakterBulanRef = ref(database, 'kontrol/karakterBulan');
+        const wrapper = document.getElementById('wrapper');
+        const namaBulanElem = document.getElementById('nama-bulan');
+        const zodiakElem = document.getElementById('zodiak');
+        const tanyaElem = document.getElementById('bulan-tanya');
+        const separatorLine = document.getElementById('separator-line');
+        
         let isInitialLoad = true;
 
         onValue(karakterBulanRef, (snapshot) => {
@@ -312,6 +220,7 @@
                     }
                     tanyaElem.textContent = pertanyaan;
                     separatorLine.style.display = 'block';
+
                     textToSpeak = `${bulan}. ${data.kemungkinanZodiak}. ${pertanyaan}.`;
                 } else {
                     namaBulanElem.textContent = "Menunggu...";
@@ -324,7 +233,6 @@
                 currentText = textToSpeak;
 
                 if (isTtsEnabled) {
-                    enterImmersiveMode();
                     speak(currentText);
                 }
 
