@@ -16,11 +16,9 @@
     <meta name="apple-mobile-web-app-title" content="Bulan Lahir">
 
     <!-- Link ke Web App Manifest -->
-    <!-- Catatan: Anda perlu membuat file manifest.json dan icon.png di folder yang sama -->
     <link rel="manifest" href="manifest.json">
     
     <!-- Icon untuk Homescreen iOS -->
-    <!-- Ganti 'icon-192.png' dengan file ikon Anda sendiri -->
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/121212/C0C0C0?text=BL">
 
     <!-- === AKHIR META TAG WEB APP === -->
@@ -56,14 +54,18 @@
         /* Kontainer untuk konten di tengah */
         .content-wrapper {
             text-align: center;
+            padding: 20px; /* Tambahkan padding agar teks tidak menempel di tepi layar kecil */
             /* Transisi untuk efek fade-in/out */
             transition: opacity 0.5s ease-in-out;
         }
 
+        /* --- PERUBAHAN FONT RESPONSIVE --- */
+
         /* Styling untuk Nama Bulan (Judul Utama) */
         #nama-bulan {
             font-family: 'Cinzel Decorative', cursive;
-            font-size: 8vw; /* Ukuran dinamis besar */
+            /* clamp(MIN, IDEAL, MAX) */
+            font-size: clamp(36px, 10vw, 80px); 
             color: #C0C0C0; /* Warna perak */
             text-shadow: 0 0 15px rgba(192, 192, 192, 0.4);
             margin: 0;
@@ -73,7 +75,7 @@
         #zodiak {
             font-family: 'Lora', serif;
             font-style: italic;
-            font-size: 3vw; /* Ukuran font diperbesar */
+            font-size: clamp(16px, 4vw, 24px); /* Tidak akan lebih kecil dari 16px */
             color: #888;
             margin-top: 10px;
             letter-spacing: 1px;
@@ -82,8 +84,7 @@
         /* Styling untuk teks pertanyaan tambahan */
         #bulan-tanya {
             font-family: 'Lora', serif;
-            /* --- PERUBAHAN BARU --- */
-            font-size: 4vw; /* Ukuran font diperbesar agar lebih besar dari zodiak */
+            font-size: clamp(20px, 5vw, 32px); /* Tidak akan lebih kecil dari 20px */
             color: #666; /* Warna lebih redup */
             margin-top: 20px;
             letter-spacing: 0.5px;
@@ -95,7 +96,6 @@
     <div class="content-wrapper" id="wrapper">
         <h1 id="nama-bulan">Menunggu...</h1>
         <p id="zodiak"></p>
-        <!-- Elemen baru untuk pertanyaan -->
         <p id="bulan-tanya"></p>
     </div>
 
@@ -126,15 +126,12 @@
           connectDatabaseEmulator(database, "localhost", 9000);
         }
 
-        // --- PERUBAHAN LOGIKA UNTUK DATA BARU ---
-
         // Referensi ke lokasi data yang BARU
         const karakterBulanRef = ref(database, 'kontrol/karakterBulan');
 
         const wrapper = document.getElementById('wrapper');
         const namaBulanElem = document.getElementById('nama-bulan');
         const zodiakElem = document.getElementById('zodiak');
-        // --- ELEMEN BARU ---
         const tanyaElem = document.getElementById('bulan-tanya');
 
         // Jalankan fungsi ini setiap kali data di 'kontrol/karakterBulan' berubah
@@ -152,7 +149,7 @@
                     namaBulanElem.textContent = bulan;
                     zodiakElem.textContent = data.kemungkinanZodiak || "";
 
-                    // --- LOGIKA BARU UNTUK PERTANYAAN ---
+                    // Logika untuk pertanyaan
                     let pertanyaan = "";
                     switch (bulan) {
                         case "Januari":   pertanyaan = "Ada Q ?"; break;
@@ -170,14 +167,11 @@
                     }
                     tanyaElem.textContent = pertanyaan;
 
-                    console.log("Konten diperbarui:", data);
-
                 } else {
                     // Jika path 'kontrol/karakterBulan' kosong
                     namaBulanElem.textContent = "Menunggu...";
                     zodiakElem.textContent = "";
-                    tanyaElem.textContent = ""; // Kosongkan juga pertanyaan
-                    console.log("Tidak ada data, menunggu perintah.");
+                    tanyaElem.textContent = "";
                 }
                 // Efek fade-in setelah teks diubah
                 wrapper.style.opacity = 1;
