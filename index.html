@@ -154,7 +154,7 @@
         // --- SETUP TTS DAN FULLSCREEN ---
         let isTtsEnabled = false; 
         let currentText = ""; 
-        let wakeLock = null; // Variabel untuk menyimpan wake lock
+        let wakeLock = null; 
 
         // Ambil semua elemen DOM
         const ttsButton = document.getElementById('tts-button');
@@ -167,34 +167,47 @@
         const tanyaElem = document.getElementById('bulan-tanya');
         const separatorLine = document.getElementById('separator-line');
 
-        // Fungsi untuk masuk ke mode imersif
+        // --- PERBAIKAN UNTUK MOBILE SAFARI ---
+        // Fungsi untuk masuk ke mode imersif dengan fallback
         async function enterImmersiveMode() {
-            try {
-                if (!document.fullscreenElement) {
-                    await document.documentElement.requestFullscreen();
+            const el = document.documentElement;
+            // Cari metode fullscreen yang didukung browser
+            const requestMethod = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+
+            if (requestMethod) {
+                try {
+                    await requestMethod.call(el);
+                } catch (err) {
+                    console.error(`Error: Gagal masuk mode fullscreen: ${err.message}`);
                 }
-                // --- FIX UNTUK SAFARI ---
-                // Cek apakah Wake Lock didukung sebelum digunakan
-                if ('wakeLock' in navigator) {
+            } else {
+                console.warn("Fullscreen API tidak didukung browser ini.");
+            }
+
+            // Cek apakah Wake Lock didukung sebelum digunakan
+            if ('wakeLock' in navigator) {
+                try {
                     wakeLock = await navigator.wakeLock.request('screen');
                     console.log('Wake Lock diaktifkan!');
+                } catch (err) {
+                    console.error(`Gagal mengaktifkan Wake Lock: ${err.message}`);
                 }
-                overlay.style.display = 'block';
-            } catch (err) {
-                console.error(`Error: Tidak bisa mengaktifkan mode fullscreen atau wake lock: ${err.name}, ${err.message}`);
             }
+            overlay.style.display = 'block';
         }
 
-        // Fungsi untuk keluar dari mode imersif
+        // Fungsi untuk keluar dari mode imersif dengan fallback
         async function exitImmersiveMode() {
-            // Cek apakah Wake Lock ada dan perlu dilepaskan
+            const exitMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+
             if (wakeLock) {
                 await wakeLock.release();
                 wakeLock = null;
-                console.log('Wake Lock dilepaskan.');
             }
-            if (document.fullscreenElement) {
-                await document.exitFullscreen();
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (exitMethod) {
+                    await exitMethod.call(document);
+                }
             }
             overlay.style.display = 'none';
         }
@@ -210,7 +223,6 @@
             } else {
                 utterance.lang = 'id-ID'; 
             }
-            // Otomatis keluar fullscreen setelah selesai bicara
             utterance.onend = () => {
                 exitImmersiveMode();
             };
@@ -238,34 +250,29 @@
             }
         });
 
-        // Event listener untuk keluar dengan tap
         overlay.addEventListener('click', () => {
-            isTtsEnabled = false;
-            ttsButton.classList.remove('active');
-            speakerOnIcon.style.display = 'none';
-            speakerMuteIcon.style.display = 'block';
-            window.speechSynthesis.cancel();
             exitImmersiveMode();
         });
 
-        // Sinkronisasi jika keluar fullscreen dengan tombol fisik
-        document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement) {
-                if (isTtsEnabled) {
-                    isTtsEnabled = false;
-                    ttsButton.classList.remove('active');
-                    speakerOnIcon.style.display = 'none';
-                    speakerMuteIcon.style.display = 'block';
-                    window.speechSynthesis.cancel();
-                    // --- FIX UNTUK SAFARI ---
-                    // Cek wakeLock sebelum melepaskannya
-                    if (wakeLock) {
-                        wakeLock.release().then(() => { wakeLock = null; });
-                    }
-                    overlay.style.display = 'none';
+        // Fungsi untuk menyinkronkan UI saat keluar dari fullscreen
+        function syncUiOnExit() {
+            if (isTtsEnabled) {
+                isTtsEnabled = false;
+                ttsButton.classList.remove('active');
+                speakerOnIcon.style.display = 'none';
+                speakerMuteIcon.style.display = 'block';
+                window.speechSynthesis.cancel();
+                if (wakeLock) {
+                    wakeLock.release().then(() => { wakeLock = null; });
                 }
+                overlay.style.display = 'none';
             }
-        });
+        }
+        
+        // Tambahkan event listener dengan prefix untuk cross-browser
+        document.addEventListener('fullscreenchange', syncUiOnExit);
+        document.addEventListener('webkitfullscreenchange', syncUiOnExit);
+
 
         // --- Logika Utama Firebase ---
         const karakterBulanRef = ref(database, 'kontrol/karakterBulan');
