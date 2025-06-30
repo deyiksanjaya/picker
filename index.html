@@ -176,7 +176,7 @@
         const ttsButton = document.getElementById('tts-button');
         const speakerOnIcon = document.getElementById('speaker-on-icon');
         const speakerMuteIcon = document.getElementById('speaker-mute-icon');
-        let currentText = "Menunggu perintah."; // Simpan teks saat ini
+        let currentText = ""; // Defaultnya teks kosong agar tidak membaca "Menunggu..."
 
         ttsButton.addEventListener('click', () => {
             isTtsEnabled = !isTtsEnabled; 
@@ -186,8 +186,6 @@
             speakerMuteIcon.style.display = isTtsEnabled ? 'none' : 'block';
 
             if (isTtsEnabled) {
-                // Saat diaktifkan, langsung baca teks yang sedang tampil.
-                // Ini adalah "interaksi pengguna" yang dibutuhkan browser.
                 speak(currentText); 
             } else {
                 window.speechSynthesis.cancel();
@@ -212,8 +210,17 @@
         const zodiakElem = document.getElementById('zodiak');
         const tanyaElem = document.getElementById('bulan-tanya');
         const separatorLine = document.getElementById('separator-line');
+        
+        // Penanda untuk mengabaikan pemuatan data pertama kali
+        let isInitialLoad = true;
 
         onValue(karakterBulanRef, (snapshot) => {
+            if (isInitialLoad) {
+                console.log("Initial data load ignored. Ready for new updates.");
+                isInitialLoad = false;
+                return; 
+            }
+
             wrapper.style.opacity = 0;
 
             setTimeout(() => {
@@ -237,7 +244,7 @@
                         case "Agustus":   pertanyaan = "Ada V ?"; break;
                         case "September": pertanyaan = "Ada B ?"; break;
                         case "Oktober":   pertanyaan = "Ada O ?"; break;
-                        case "November":  pertanyaan = "Ada huruf double ?"; break;
+                        case "November":  pertanyaan = "Ada T ?"; break;
                         case "Desember":  pertanyaan = "Ada S ?"; break;
                     }
                     tanyaElem.textContent = pertanyaan;
@@ -250,14 +257,13 @@
                     zodiakElem.textContent = "";
                     tanyaElem.textContent = "";
                     separatorLine.style.display = 'none';
-                    textToSpeak = "Menunggu perintah.";
+                    // --- PERUBAHAN KUNCI ---
+                    // Pastikan textToSpeak kosong saat tidak ada data
+                    textToSpeak = "";
                 }
                 
-                // Simpan teks terbaru ke variabel global
                 currentText = textToSpeak;
 
-                // Cek apakah TTS aktif, lalu baca teksnya secara otomatis
-                // Ini akan bekerja karena izin sudah didapat dari klik pertama.
                 if (isTtsEnabled) {
                     speak(currentText);
                 }
