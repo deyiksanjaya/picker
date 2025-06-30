@@ -59,35 +59,37 @@
             transition: opacity 0.5s ease-in-out;
         }
 
-        /* --- PERUBAHAN FONT RESPONSIVE --- */
-
-        /* Styling untuk Nama Bulan (Judul Utama) */
-        #nama-bulan {
-            font-family: 'Cinzel Decorative', cursive;
-            /* clamp(MIN, IDEAL, MAX) */
-            font-size: clamp(36px, 10vw, 80px); 
-            color: #C0C0C0; /* Warna perak */
-            text-shadow: 0 0 15px rgba(192, 192, 192, 0.4);
+        /* Styling terpadu untuk semua teks */
+        #nama-bulan, #zodiak, #bulan-tanya {
+            font-family: 'Cinzel Decorative', cursive; /* Font disamakan */
+            font-size: clamp(24px, 6vw, 42px); /* Ukuran disamakan untuk semua */
+            text-shadow: 0 0 10px rgba(192, 192, 192, 0.3);
             margin: 0;
+            line-height: 1.4; /* Atur jarak antar baris */
         }
 
-        /* Styling untuk Zodiak (Subtitle) */
+        /* Gunakan warna untuk menciptakan hierarki */
+        #nama-bulan {
+            color: #C0C0C0; /* Paling terang */
+        }
+
         #zodiak {
-            font-family: 'Lora', serif;
-            font-style: italic;
-            font-size: clamp(16px, 4vw, 24px); /* Tidak akan lebih kecil dari 16px */
-            color: #888;
-            margin-top: 10px;
-            letter-spacing: 1px;
+            color: #999; /* Sedikit lebih redup */
         }
         
-        /* Styling untuk teks pertanyaan tambahan */
         #bulan-tanya {
-            font-family: 'Lora', serif;
-            font-size: clamp(20px, 5vw, 32px); /* Tidak akan lebih kecil dari 20px */
-            color: #666; /* Warna lebih redup */
-            margin-top: 20px;
-            letter-spacing: 0.5px;
+            color: #666; /* Paling redup */
+        }
+        
+        /* --- GARIS PEMISAH MERAH --- */
+        #separator-line {
+            display: none; /* Awalnya disembunyikan */
+            margin: 20px auto; /* Memberi jarak vertikal */
+            /* --- PERUBAHAN BARU --- */
+            width: 120px; /* Lebar garis diperpanjang */
+            height: 2px; /* Ketebalan garis */
+            background-color: #8B0000; /* Warna merah gelap */
+            border-radius: 2px;
         }
     </style>
 </head>
@@ -96,6 +98,10 @@
     <div class="content-wrapper" id="wrapper">
         <h1 id="nama-bulan">Menunggu...</h1>
         <p id="zodiak"></p>
+        
+        <!-- Garis merah sebagai pemisah -->
+        <div id="separator-line"></div>
+
         <p id="bulan-tanya"></p>
     </div>
 
@@ -133,6 +139,8 @@
         const namaBulanElem = document.getElementById('nama-bulan');
         const zodiakElem = document.getElementById('zodiak');
         const tanyaElem = document.getElementById('bulan-tanya');
+        // --- AMBIL ELEMEN GARIS PEMISAH ---
+        const separatorLine = document.getElementById('separator-line');
 
         // Jalankan fungsi ini setiap kali data di 'kontrol/karakterBulan' berubah
         onValue(karakterBulanRef, (snapshot) => {
@@ -162,16 +170,22 @@
                         case "Agustus":   pertanyaan = "Ada V ?"; break;
                         case "September": pertanyaan = "Ada B ?"; break;
                         case "Oktober":   pertanyaan = "Ada O ?"; break;
-                        case "November":  pertanyaan = "Ada huruf double ?"; break;
+                        case "November":  pertanyaan = "Ada T ?"; break;
                         case "Desember":  pertanyaan = "Ada S ?"; break;
                     }
                     tanyaElem.textContent = pertanyaan;
+                    
+                    // --- TAMPILKAN GARIS ---
+                    separatorLine.style.display = 'block';
 
                 } else {
                     // Jika path 'kontrol/karakterBulan' kosong
                     namaBulanElem.textContent = "Menunggu...";
                     zodiakElem.textContent = "";
                     tanyaElem.textContent = "";
+
+                    // --- SEMBUNYIKAN GARIS ---
+                    separatorLine.style.display = 'none';
                 }
                 // Efek fade-in setelah teks diubah
                 wrapper.style.opacity = 1;
