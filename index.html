@@ -176,6 +176,7 @@
         const ttsButton = document.getElementById('tts-button');
         const speakerOnIcon = document.getElementById('speaker-on-icon');
         const speakerMuteIcon = document.getElementById('speaker-mute-icon');
+        let currentText = ""; 
         
         ttsButton.addEventListener('click', () => {
             isTtsEnabled = !isTtsEnabled; 
@@ -184,17 +185,24 @@
             speakerOnIcon.style.display = isTtsEnabled ? 'block' : 'none';
             speakerMuteIcon.style.display = isTtsEnabled ? 'none' : 'block';
 
-            // --- PERUBAHAN KUNCI ---
-            // Saat dinonaktifkan, hentikan suara yang mungkin sedang berjalan.
-            // Tidak perlu memanggil speak() saat diaktifkan di sini.
-            if (!isTtsEnabled) {
+            // --- PERUBAHAN LOGIKA WORKAROUND ---
+            if (isTtsEnabled) {
+                // Jika tidak ada teks yang valid untuk dibaca, ucapkan konfirmasi.
+                // Ini akan "membuka gerbang" izin audio.
+                if (!currentText) {
+                    speak("Suara diaktifkan");
+                } else {
+                    // Jika sudah ada teks, baca teks tersebut.
+                    speak(currentText);
+                }
+            } else {
+                // Jika menonaktifkan, hentikan suara yang mungkin sedang berjalan.
                 window.speechSynthesis.cancel();
             }
         });
 
         // Fungsi untuk membacakan teks
         function speak(text) {
-            // Hanya jalankan jika ada teks yang valid untuk dibaca
             if (!text) return;
             window.speechSynthesis.cancel();
             
@@ -243,7 +251,7 @@
                         case "Agustus":   pertanyaan = "Ada V ?"; break;
                         case "September": pertanyaan = "Ada B ?"; break;
                         case "Oktober":   pertanyaan = "Ada O ?"; break;
-                        case "November":  pertanyaan = "Ada huruf double ?"; break;
+                        case "November":  pertanyaan = "Ada T ?"; break;
                         case "Desember":  pertanyaan = "Ada S ?"; break;
                     }
                     tanyaElem.textContent = pertanyaan;
@@ -259,10 +267,10 @@
                     textToSpeak = "";
                 }
                 
-                // Cek apakah TTS aktif, lalu baca teksnya.
-                // Ini akan bekerja karena izin sudah didapat dari klik pertama.
+                currentText = textToSpeak;
+
                 if (isTtsEnabled) {
-                    speak(textToSpeak);
+                    speak(currentText);
                 }
 
                 wrapper.style.opacity = 1;
