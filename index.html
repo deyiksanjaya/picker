@@ -1,231 +1,188 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PICKER : Pick, Play, Learn</title>
+    <title>Halaman Tampilan Dinamis</title>
+
+    <!-- === META TAG UNTUK WEB APP (PWA) === -->
     
-    <!-- Link to Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Memberitahu Android warna address bar -->
+    <meta name="theme-color" content="#121212">
+
+    <!-- Memberitahu iOS untuk membukanya sebagai web app -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bulan Lahir">
+
+    <!-- Link ke Web App Manifest -->
+    <!-- Catatan: Anda perlu membuat file manifest.json dan icon.png di folder yang sama -->
+    <link rel="manifest" href="manifest.json">
     
+    <!-- Icon untuk Homescreen iOS -->
+    <!-- Ganti 'icon-192.png' dengan file ikon Anda sendiri -->
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/121212/C0C0C0?text=BL">
+
+    <!-- === AKHIR META TAG WEB APP === -->
+
+    <!-- Impor Font yang sama dengan halaman kontrol -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Lora:ital@1&display=swap" rel="stylesheet">
+
     <style>
-    /* Basic Reset */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+        /* CSS Reset sederhana */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    /* Body Styling */
-    body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        font-family: 'Poppins', sans-serif;
-        background-color: #1a1a1a; /* Dark gray */
-        color: #e0e0e0; /* Light gray */
-        position: relative;
-        height: 100vh;
-        overflow: hidden;
-    }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; 
+        }
 
-    /* Header Container */
-    .header-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background-color: #1a1a1a; /* Same as body background */
-        padding: 1rem;
-        color: #ffffff; /* White for title */
-        font-size: 1.5rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
-        border-bottom: 1px solid #333; /* Subtle border for separation */
-    }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #121212; /* Warna latar belakang disamakan */
+            color: #E0E0E0;
+            font-family: 'Lora', serif;
+        }
 
-    .title {
-        text-align: center;
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
+        /* Kontainer untuk konten di tengah */
+        .content-wrapper {
+            text-align: center;
+            /* Transisi untuk efek fade-in/out */
+            transition: opacity 0.5s ease-in-out;
+        }
 
-    /* Footer Container */
-    .footer-container {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: #1a1a1a; /* Same as body background */
-        padding: 1rem;
-        color: #999; /* Medium gray */
-        font-size: 0.9rem;
-        text-align: center;
-        border-top: 1px solid #333; /* Subtle border for separation */
-    }
+        /* Styling untuk Nama Bulan (Judul Utama) */
+        #nama-bulan {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 8vw; /* Ukuran dinamis besar */
+            color: #C0C0C0; /* Warna perak */
+            text-shadow: 0 0 15px rgba(192, 192, 192, 0.4);
+            margin: 0;
+        }
 
-    /* Main content area */
-    .main-content {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 70px;  /* Prevent overlap with fixed header */
-        padding-bottom: 100px; /* Prevent overlap with fixed footer */
-        width: 100%;
-        overflow-y: auto;
-    }
-
-    /* Section Styling */
-    .section {
-        margin: 2.5rem 0; /* Increased margin for spacing between sections */
-        text-align: center;
-        width: 100%;
-    }
-
-    .section-title {
-        font-size: 2rem;
-        font-weight: 600;
-        margin-bottom: 0.7rem;
-        color: #ffffff;
-    }
-
-    /* Thin Line */
-    hr {
-        border: none;
-        height: 1px;
-        background-color: #444; /* Subtle gray line */
-        margin: 2rem 0; /* Space above and below the line */
-        width: 80%;
-    }
-
-    /* Thumbnails Grid */
-    .menu-grid {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-    }
-
-    .thumbnail {
-        width: 100%;
-        max-width: 300px;
-        background-color: #333; /* Medium gray */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        border-radius: 12px;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5); /* Subtle shadow */
-        overflow: hidden;
-        text-decoration: none;
-        color: #e0e0e0; /* Light gray text */
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .thumbnail:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7); /* Deeper shadow on hover */
-    }
-
-    .thumbnail img {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-        border-bottom: 3px solid #444; /* Dark gray border */
-    }
-
-    .thumbnail-title {
-        font-size: 1.3rem;
-        font-weight: 600;
-        padding: 1rem;
-        text-align: center;
-        color: #e0e0e0; /* Light gray text */
-    }
-
-</style>
+        /* Styling untuk Zodiak (Subtitle) */
+        #zodiak {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 3vw; /* Ukuran font diperbesar */
+            color: #888;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+        
+        /* Styling untuk teks pertanyaan tambahan */
+        #bulan-tanya {
+            font-family: 'Lora', serif;
+            /* --- PERUBAHAN BARU --- */
+            font-size: 4vw; /* Ukuran font diperbesar agar lebih besar dari zodiak */
+            color: #666; /* Warna lebih redup */
+            margin-top: 20px;
+            letter-spacing: 0.5px;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Header Container -->
-    <div class="header-container">
-        <div class="title">PICKER : Pick, Play, Learn</div>
+    <div class="content-wrapper" id="wrapper">
+        <h1 id="nama-bulan">Menunggu...</h1>
+        <p id="zodiak"></p>
+        <!-- Elemen baru untuk pertanyaan -->
+        <p id="bulan-tanya"></p>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        
-        <!-- Pick Section -->
-        <div class="section">
-            <div class="section-title">PICK 🎲</div>
-            <div class="menu-grid">
-                <a href="https://picker.my.id/list" class="thumbnail">
-                    <img src="https://i.ibb.co.com/881wXLv/IMG-7551.jpg" alt="List Randomizer">
-                    <div class="thumbnail-title">List Randomizer</div>
-                </a>
-                <a href="https://picker.my.id/numbers?id=mypeek" class="thumbnail">
-                    <img src="https://i.ibb.co.com/VHc5dZ7/IMG-7550.jpg" alt="2D Dice Advance">
-                    <div class="thumbnail-title">2D Dice</div>
-                </a>
-                <a href="https://picker.my.id/trapdoors" class="thumbnail">
-                    <img src="https://i.ibb.co.com/Cv17VDH/9-B2279-AB-ECC2-45-AA-9874-232-B3-FD8-D443.png" alt="Trapdoors">
-                    <div class="thumbnail-title">Trapdoors</div>
-                </a>
-                <a href="https://picker.my.id/roller.html" class="thumbnail">
-            <img src="https://i.ibb.co.com/ZSDyYC3/IMG-9293.jpg" alt="Roller">
-            <div class="thumbnail-title">Roller</div>
-        </a>
-            </div>
-        </div>
+    <script type="module">
+        // Impor fungsi yang kita butuhkan dari SDK Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
+        import { getDatabase, ref, onValue, connectDatabaseEmulator } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
 
-        <hr>
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+          apiKey: "AIzaSyBRrhdZgg-8MUt8BinjrUG2yZ5tYaREN7o",
+          authDomain: "photo-390e6.firebaseapp.com",
+          databaseURL: "https://photo-390e6-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "photo-390e6",
+          storageBucket: "photo-390e6.firebasestorage.app",
+          messagingSenderId: "668941746361",
+          appId: "1:668941746361:web:2365def1f7b81f328b1b68",
+          measurementId: "G-ETW0DNJYJL"
+        };
 
-        <!-- Play Section -->
-        <div class="section">
-            <div class="section-title">PLAY 🃏</div>
-            <div class="menu-grid">
-                <a href="https://picker.my.id/tic" class="thumbnail">
-                    <img src="https://i.ibb.co.com/9q80BWY/IMG-7797.jpg" alt="Tic Tac Toe">
-                    <div class="thumbnail-title">Tic Tac Toe</div>
-                </a>
-                <a href="https://picker.my.id/draw" class="thumbnail">
-                    <img src="https://i.ibb.co.com/C59D1tj/IMG-8414.png" alt="Draw">
-                    <div class="thumbnail-title">Draw</div>
-                </a>
-                
-            </div>
-        </div>
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-        <hr>
+        // Hubungkan ke Emulator jika berjalan di localhost
+        if (window.location.hostname === "localhost") {
+          console.log("Tampilan Gothic: Menghubungkan ke Emulator Database Lokal...");
+          connectDatabaseEmulator(database, "localhost", 9000);
+        }
 
-        <!-- Learn Section -->
-        <div class="section">
-            <div class="section-title">LEARN 📖</div>
-            <div class="menu-grid">
-                <a href="https://picker.my.id/stories" class="thumbnail">
-                    <img src="https://i.ibb.co.com/0rvCjyn/advance.png" alt="Stories">
-                    <div class="thumbnail-title">Stories: Learn Vocab</div>
-                </a>
-                <a href="https://picker.my.id/celebinfo" class="thumbnail">
-                    <img src="https://i.ibb.co.com/2kkhGK0/IMG-8491.png" alt="Stories">
-                    <div class="thumbnail-title">CelebInfo</div>
-                </a>
-            </div>
-        </div>
-    </div>
+        // --- PERUBAHAN LOGIKA UNTUK DATA BARU ---
 
-    <hr>
+        // Referensi ke lokasi data yang BARU
+        const karakterBulanRef = ref(database, 'kontrol/karakterBulan');
 
-    <!-- Footer Container -->
-    <div class="footer-container">
-        &copy; <span id="year"></span> PICKER. All rights reserved.
-    </div>
+        const wrapper = document.getElementById('wrapper');
+        const namaBulanElem = document.getElementById('nama-bulan');
+        const zodiakElem = document.getElementById('zodiak');
+        // --- ELEMEN BARU ---
+        const tanyaElem = document.getElementById('bulan-tanya');
 
-    <script>
-        // Set the current year in the footer
-        document.getElementById("year").textContent = new Date().getFullYear();
+        // Jalankan fungsi ini setiap kali data di 'kontrol/karakterBulan' berubah
+        onValue(karakterBulanRef, (snapshot) => {
+            
+            // Efek fade-out sebelum mengubah teks
+            wrapper.style.opacity = 0;
+
+            setTimeout(() => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const bulan = data.namaBulan || "";
+                    
+                    // Ambil nama bulan dan zodiak dari data yang diterima
+                    namaBulanElem.textContent = bulan;
+                    zodiakElem.textContent = data.kemungkinanZodiak || "";
+
+                    // --- LOGIKA BARU UNTUK PERTANYAAN ---
+                    let pertanyaan = "";
+                    switch (bulan) {
+                        case "Januari":   pertanyaan = "Ada Q ?"; break;
+                        case "Februari":  pertanyaan = "Ada A ?"; break;
+                        case "Maret":     pertanyaan = "Ada R ?"; break;
+                        case "April":     pertanyaan = "Ada E ?"; break;
+                        case "Mei":       pertanyaan = "Ada U ?"; break;
+                        case "Juni":      pertanyaan = "Ada G ?"; break;
+                        case "Juli":      pertanyaan = "Ada L ?"; break;
+                        case "Agustus":   pertanyaan = "Ada V ?"; break;
+                        case "September": pertanyaan = "Ada B ?"; break;
+                        case "Oktober":   pertanyaan = "Ada O ?"; break;
+                        case "November":  pertanyaan = "Ada huruf double ?"; break;
+                        case "Desember":  pertanyaan = "Ada S ?"; break;
+                    }
+                    tanyaElem.textContent = pertanyaan;
+
+                    console.log("Konten diperbarui:", data);
+
+                } else {
+                    // Jika path 'kontrol/karakterBulan' kosong
+                    namaBulanElem.textContent = "Menunggu...";
+                    zodiakElem.textContent = "";
+                    tanyaElem.textContent = ""; // Kosongkan juga pertanyaan
+                    console.log("Tidak ada data, menunggu perintah.");
+                }
+                // Efek fade-in setelah teks diubah
+                wrapper.style.opacity = 1;
+            }, 500); // Sesuaikan dengan durasi transisi di CSS
+        });
     </script>
-    
 </body>
 </html>
