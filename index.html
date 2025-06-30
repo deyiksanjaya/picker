@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Tampilan Dinamis</title>
+
+    <!-- === META TAG UNTUK WEB APP (PWA) === -->
+    
+    <!-- Memberitahu Android warna address bar -->
+    <meta name="theme-color" content="#121212">
+
+    <!-- Memberitahu iOS untuk membukanya sebagai web app -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bulan Lahir">
+
+    <!-- Link ke Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icon untuk Homescreen iOS -->
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/121212/C0C0C0?text=BL">
+
+    <!-- === AKHIR META TAG WEB APP === -->
+
+    <!-- Impor Font yang sama dengan halaman kontrol -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Lora:ital@1&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Reset sederhana */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; 
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #121212; /* Warna latar belakang disamakan */
+            color: #E0E0E0;
+            font-family: 'Lora', serif;
+        }
+
+        /* Kontainer untuk konten di tengah */
+        .content-wrapper {
+            text-align: center;
+            padding: 20px; /* Tambahkan padding agar teks tidak menempel di tepi layar kecil */
+            /* Transisi untuk efek fade-in/out */
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Styling terpadu untuk semua teks */
+        #nama-bulan, #zodiak, #bulan-tanya {
+            font-family: 'Cinzel Decorative', cursive; /* Font disamakan */
+            font-size: clamp(24px, 6vw, 42px); /* Ukuran disamakan untuk semua */
+            text-shadow: 0 0 10px rgba(192, 192, 192, 0.3);
+            margin: 0;
+            line-height: 1.4; /* Atur jarak antar baris */
+        }
+
+        /* Gunakan warna untuk menciptakan hierarki */
+        #nama-bulan {
+            color: #C0C0C0; /* Paling terang */
+        }
+
+        #zodiak {
+            color: #999; /* Sedikit lebih redup */
+        }
+        
+        #bulan-tanya {
+            color: #666; /* Paling redup */
+        }
+        
+        /* --- GARIS PEMISAH MERAH --- */
+        #separator-line {
+            display: none; /* Awalnya disembunyikan */
+            margin: 20px auto; /* Memberi jarak vertikal */
+            /* --- PERUBAHAN BARU --- */
+            width: 120px; /* Lebar garis diperpanjang */
+            height: 2px; /* Ketebalan garis */
+            background-color: #8B0000; /* Warna merah gelap */
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content-wrapper" id="wrapper">
+        <h1 id="nama-bulan">Menunggu...</h1>
+        <p id="zodiak"></p>
+        
+        <!-- Garis merah sebagai pemisah -->
+        <div id="separator-line"></div>
+
+        <p id="bulan-tanya"></p>
+    </div>
+
+    <script type="module">
+        // Impor fungsi yang kita butuhkan dari SDK Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
+        import { getDatabase, ref, onValue, connectDatabaseEmulator } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
+
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+          apiKey: "AIzaSyBRrhdZgg-8MUt8BinjrUG2yZ5tYaREN7o",
+          authDomain: "photo-390e6.firebaseapp.com",
+          databaseURL: "https://photo-390e6-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "photo-390e6",
+          storageBucket: "photo-390e6.firebasestorage.app",
+          messagingSenderId: "668941746361",
+          appId: "1:668941746361:web:2365def1f7b81f328b1b68",
+          measurementId: "G-ETW0DNJYJL"
+        };
+
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Hubungkan ke Emulator jika berjalan di localhost
+        if (window.location.hostname === "localhost") {
+          console.log("Tampilan Gothic: Menghubungkan ke Emulator Database Lokal...");
+          connectDatabaseEmulator(database, "localhost", 9000);
+        }
+
+        // Referensi ke lokasi data yang BARU
+        const karakterBulanRef = ref(database, 'kontrol/karakterBulan');
+
+        const wrapper = document.getElementById('wrapper');
+        const namaBulanElem = document.getElementById('nama-bulan');
+        const zodiakElem = document.getElementById('zodiak');
+        const tanyaElem = document.getElementById('bulan-tanya');
+        // --- AMBIL ELEMEN GARIS PEMISAH ---
+        const separatorLine = document.getElementById('separator-line');
+
+        // Jalankan fungsi ini setiap kali data di 'kontrol/karakterBulan' berubah
+        onValue(karakterBulanRef, (snapshot) => {
+            
+            // Efek fade-out sebelum mengubah teks
+            wrapper.style.opacity = 0;
+
+            setTimeout(() => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const bulan = data.namaBulan || "";
+                    
+                    // Ambil nama bulan dan zodiak dari data yang diterima
+                    namaBulanElem.textContent = bulan;
+                    zodiakElem.textContent = data.kemungkinanZodiak || "";
+
+                    // Logika untuk pertanyaan
+                    let pertanyaan = "";
+                    switch (bulan) {
+                        case "Januari":   pertanyaan = "Ada Q ?"; break;
+                        case "Februari":  pertanyaan = "Ada A ?"; break;
+                        case "Maret":     pertanyaan = "Ada R ?"; break;
+                        case "April":     pertanyaan = "Ada E ?"; break;
+                        case "Mei":       pertanyaan = "Ada U ?"; break;
+                        case "Juni":      pertanyaan = "Ada G ?"; break;
+                        case "Juli":      pertanyaan = "Ada L ?"; break;
+                        case "Agustus":   pertanyaan = "Ada V ?"; break;
+                        case "September": pertanyaan = "Ada B ?"; break;
+                        case "Oktober":   pertanyaan = "Ada O ?"; break;
+                        case "November":  pertanyaan = "Ada T ?"; break;
+                        case "Desember":  pertanyaan = "Ada S ?"; break;
+                    }
+                    tanyaElem.textContent = pertanyaan;
+                    
+                    // --- TAMPILKAN GARIS ---
+                    separatorLine.style.display = 'block';
+
+                } else {
+                    // Jika path 'kontrol/karakterBulan' kosong
+                    namaBulanElem.textContent = "Menunggu...";
+                    zodiakElem.textContent = "";
+                    tanyaElem.textContent = "";
+
+                    // --- SEMBUNYIKAN GARIS ---
+                    separatorLine.style.display = 'none';
+                }
+                // Efek fade-in setelah teks diubah
+                wrapper.style.opacity = 1;
+            }, 500); // Sesuaikan dengan durasi transisi di CSS
+        });
+    </script>
+</body>
+</html>
