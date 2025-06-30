@@ -190,7 +190,7 @@
                 // Jika tidak ada teks yang valid untuk dibaca, ucapkan konfirmasi.
                 // Ini akan "membuka gerbang" izin audio.
                 if (!currentText) {
-                    speak("Suara diaktifkan");
+                    speak("Voice Activated");
                 } else {
                     // Jika sudah ada teks, baca teks tersebut.
                     speak(currentText);
@@ -241,18 +241,18 @@
 
                     let pertanyaan = "";
                     switch (bulan) {
-                        case "Januari":   pertanyaan = "Ada Q ?"; break;
-                        case "Februari":  pertanyaan = "Ada A ?"; break;
-                        case "Maret":     pertanyaan = "Ada R ?"; break;
-                        case "April":     pertanyaan = "Ada E ?"; break;
-                        case "Mei":       pertanyaan = "Ada U ?"; break;
-                        case "Juni":      pertanyaan = "Ada G ?"; break;
-                        case "Juli":      pertanyaan = "Ada L ?"; break;
-                        case "Agustus":   pertanyaan = "Ada V ?"; break;
-                        case "September": pertanyaan = "Ada B ?"; break;
-                        case "Oktober":   pertanyaan = "Ada O ?"; break;
-                        case "November":  pertanyaan = "Ada T ?"; break;
-                        case "Desember":  pertanyaan = "Ada S ?"; break;
+                        case "Januari":   pertanyaan = "Q"; break;
+                        case "Februari":  pertanyaan = "A"; break;
+                        case "Maret":     pertanyaan = "R"; break;
+                        case "April":     pertanyaan = "E"; break;
+                        case "Mei":       pertanyaan = "U"; break;
+                        case "Juni":      pertanyaan = "G"; break;
+                        case "Juli":      pertanyaan = "L"; break;
+                        case "Agustus":   pertanyaan = "V"; break;
+                        case "September": pertanyaan = "B"; break;
+                        case "Oktober":   pertanyaan = "O"; break;
+                        case "November":  pertanyaan = "T"; break;
+                        case "Desember":  pertanyaan = "S"; break;
                     }
                     tanyaElem.textContent = pertanyaan;
                     separatorLine.style.display = 'block';
