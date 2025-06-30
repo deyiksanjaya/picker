@@ -170,24 +170,31 @@
         // Fungsi untuk masuk ke mode imersif
         async function enterImmersiveMode() {
             try {
-                await document.documentElement.requestFullscreen();
-                wakeLock = await navigator.wakeLock.request('screen');
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen();
+                }
+                // --- FIX UNTUK SAFARI ---
+                // Cek apakah Wake Lock didukung sebelum digunakan
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Wake Lock diaktifkan!');
+                }
                 overlay.style.display = 'block';
-                console.log('Wake Lock diaktifkan!');
             } catch (err) {
-                console.error(`Error: Tidak bisa mengaktifkan mode fullscreen atau wake lock: ${err.message}`);
+                console.error(`Error: Tidak bisa mengaktifkan mode fullscreen atau wake lock: ${err.name}, ${err.message}`);
             }
         }
 
         // Fungsi untuk keluar dari mode imersif
         async function exitImmersiveMode() {
-            if (document.fullscreenElement) {
-                await document.exitFullscreen();
-            }
+            // Cek apakah Wake Lock ada dan perlu dilepaskan
             if (wakeLock) {
                 await wakeLock.release();
                 wakeLock = null;
                 console.log('Wake Lock dilepaskan.');
+            }
+            if (document.fullscreenElement) {
+                await document.exitFullscreen();
             }
             overlay.style.display = 'none';
         }
@@ -233,7 +240,6 @@
 
         // Event listener untuk keluar dengan tap
         overlay.addEventListener('click', () => {
-            // Nonaktifkan TTS dan keluar dari mode imersif
             isTtsEnabled = false;
             ttsButton.classList.remove('active');
             speakerOnIcon.style.display = 'none';
@@ -245,12 +251,14 @@
         // Sinkronisasi jika keluar fullscreen dengan tombol fisik
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) {
-                if (isTtsEnabled) { // Jika masih aktif, nonaktifkan
+                if (isTtsEnabled) {
                     isTtsEnabled = false;
                     ttsButton.classList.remove('active');
                     speakerOnIcon.style.display = 'none';
                     speakerMuteIcon.style.display = 'block';
                     window.speechSynthesis.cancel();
+                    // --- FIX UNTUK SAFARI ---
+                    // Cek wakeLock sebelum melepaskannya
                     if (wakeLock) {
                         wakeLock.release().then(() => { wakeLock = null; });
                     }
