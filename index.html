@@ -80,40 +80,32 @@
             const loadingIndicator = document.getElementById('loading');
             const permissionOverlay = document.getElementById('permission-overlay');
 
-            // --- PERUBAHAN: Logika orientasi dengan pemicu saat kembali ---
-            let orientationTriggered = false; // Memastikan seluruh fitur hanya berjalan sekali
-            let isFaceDown = false; // Melacak apakah perangkat sedang menghadap ke bawah
+            let orientationTriggered = false;
+            let isFaceDown = false;
 
             const handleOrientation = (event) => {
                 if (orientationTriggered || event.beta === null) return;
 
                 const beta = event.beta;
+                const isCurrentlyFaceDown = beta > 170 || beta < -170;
 
-                // Definisi kondisi yang lebih spesifik
-                const isCurrentlyFaceDown = beta > 170 || beta < -170; // Rentang sempit
-                const isReturningToNormal = beta < 90 && beta > -90; // Posisi tegak
-
-                // Langkah 1: Deteksi saat perangkat BARU SAJA menghadap ke bawah.
-                // Tidak ada aksi visual, hanya set status.
+                // Langkah 1: Deteksi saat perangkat masuk ke kondisi "face down"
                 if (!isFaceDown && isCurrentlyFaceDown) {
                     isFaceDown = true;
-                    console.log("Perangkat kini menghadap ke bawah. Menunggu untuk kembali...");
                 }
-
-                // Langkah 2: Deteksi saat perangkat SUDAH menghadap ke bawah, dan KINI kembali ke normal.
-                // Ini adalah momen pemicunya.
-                else if (isFaceDown && isReturningToNormal) {
+                // PERUBAHAN LOGIKA: Aksi dipicu saat perangkat KELUAR dari kondisi "face down"
+                else if (isFaceDown && !isCurrentlyFaceDown) {
                     orientationTriggered = true; // Kunci fitur agar tidak berjalan lagi
                     isFaceDown = false; // Reset status
 
-                    console.log("Perangkat kembali normal. Melompat ke tujuan dan menonaktifkan fitur.");
-                    
                     const statueOfLibertyCard = document.getElementById('monument-card-Statue-of-Liberty');
                     if (statueOfLibertyCard) {
-                        statueOfLibertyCard.scrollIntoView({ behavior: 'instant', block: 'center' });
+                        // PERUBAHAN METODE: Menggunakan window.scrollTo untuk lompatan absolut dan instan
+                        // Ini akan mengabaikan inertia scroll yang sedang berjalan.
+                        const cardTopPosition = statueOfLibertyCard.offsetTop;
+                        window.scrollTo(0, cardTopPosition);
                     }
                     
-                    // Hentikan pendeteksian untuk menghemat baterai
                     window.removeEventListener('deviceorientation', handleOrientation, true);
                 }
             };
