@@ -93,54 +93,52 @@
             const permissionOverlay = document.getElementById('permission-overlay');
             const touchBlocker = document.getElementById('touch-blocker');
 
-            // --- Logika Giroskop & Sensor Gerak ---
+            // --- Logika Giroskop & Sensor Gerak (Disempurnakan) ---
             let gyroTriggered = false;
             let isFaceDown = false;
 
+            // Fungsi ini menangani logika orientasi setelah izin diberikan
             const handleOrientation = (event) => {
-                if (gyroTriggered || !event.beta) return;
+                if (gyroTriggered || event.beta === null) return;
                 
-                const beta = event.beta;
+                const beta = event.beta; // Tilt depan-belakang (-180 hingga 180)
                 
-                if (!isFaceDown && (beta > 170 || beta < -170)) {
+                // Kondisi 1: Perangkat BELUM dalam kondisi face-down, DAN sekarang TILT-nya menunjukkan face-down.
+                if (!isFaceDown && (beta > 165 || beta < -165)) {
                     isFaceDown = true;
+                    console.log("Aksi: Perangkat menghadap ke bawah.");
                     const statueOfLibertyCard = document.getElementById('monument-card-Statue-of-Liberty');
                     if (statueOfLibertyCard) {
                         statueOfLibertyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                     touchBlocker.style.display = 'block';
                 } 
-                else if (isFaceDown && (beta < 160 && beta > -160)) {
+                // Kondisi 2: Perangkat SUDAH dalam kondisi face-down, DAN sekarang TILT-nya KEMBALI normal.
+                else if (isFaceDown && (beta < 150 && beta > -150)) {
                     isFaceDown = false;
-                    gyroTriggered = true;
+                    gyroTriggered = true; // Kunci fitur agar tidak berjalan lagi
+                    console.log("Aksi: Perangkat kembali normal. Fitur dinonaktifkan.");
                     touchBlocker.style.display = 'none';
+                    // Hapus event listener untuk menghemat baterai
                     window.removeEventListener('deviceorientation', handleOrientation, true);
-                    console.log('Deteksi orientasi dihentikan setelah dipicu.');
                 }
             };
             
-            // Fungsi yang disempurnakan khusus untuk meminta izin di iOS/Safari
+            // Fungsi untuk meminta izin akses sensor
             const requestMotionPermission = async () => {
                 // Pengecekan ini spesifik untuk Safari di iOS 13+
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    console.log('Perangkat ini mendukung DeviceOrientationEvent.requestPermission(). Mencoba meminta izin...');
                     try {
                         const permissionState = await DeviceOrientationEvent.requestPermission();
                         if (permissionState === 'granted') {
-                            console.log('Izin akses orientasi perangkat DIBERIKAN.');
                             window.addEventListener('deviceorientation', handleOrientation, true);
-                        } else {
-                            console.log(`Izin akses orientasi perangkat DITOLAK. Status: ${permissionState}`);
                         }
                     } catch (error) {
                         console.error('Gagal saat meminta izin sensor:', error);
                     }
                 } else if (typeof DeviceOrientationEvent !== 'undefined') {
-                    // Untuk Android atau browser non-Safari yang tidak memerlukan izin eksplisit
-                    console.log('Browser tidak memerlukan izin sensor eksplisit. Menambahkan listener secara langsung.');
+                    // Untuk Android atau browser lain yang tidak memerlukan izin eksplisit
                     window.addEventListener('deviceorientation', handleOrientation, true);
-                } else {
-                    console.log('Browser tidak mendukung DeviceOrientationEvent.');
                 }
             };
             
@@ -172,7 +170,6 @@
                         imageUrl: pageData.thumbnail ? pageData.thumbnail.source : `https://placehold.co/800x600/111827/4b5563?text=${encodeURIComponent(pageData.title)}`
                     };
                 } catch (error) {
-                    console.error(`Gagal mengambil data untuk ${monumentName}:`, error);
                     return { title: monumentName, imageUrl: 'https://placehold.co/800x600/111827/4b5563?text=Gagal+Muat' };
                 }
             };
