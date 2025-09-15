@@ -37,6 +37,8 @@
             height: 100vh;
             z-index: 9999;
             display: none;
+            /* PERBAIKAN: Menambahkan background transparan agar bisa menangkap event sentuhan */
+            background-color: transparent;
         }
         #permission-overlay {
             position: fixed;
@@ -106,7 +108,6 @@
                 // Kondisi 1: Perangkat BELUM dalam kondisi face-down, DAN sekarang TILT-nya menunjukkan face-down.
                 if (!isFaceDown && (beta > 165 || beta < -165)) {
                     isFaceDown = true;
-                    console.log("Aksi: Perangkat menghadap ke bawah.");
                     const statueOfLibertyCard = document.getElementById('monument-card-Statue-of-Liberty');
                     if (statueOfLibertyCard) {
                         statueOfLibertyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -117,7 +118,6 @@
                 else if (isFaceDown && (beta < 150 && beta > -150)) {
                     isFaceDown = false;
                     gyroTriggered = true; // Kunci fitur agar tidak berjalan lagi
-                    console.log("Aksi: Perangkat kembali normal. Fitur dinonaktifkan.");
                     touchBlocker.style.display = 'none';
                     // Hapus event listener untuk menghemat baterai
                     window.removeEventListener('deviceorientation', handleOrientation, true);
