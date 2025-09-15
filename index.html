@@ -11,21 +11,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Menggunakan font Inter sebagai default */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #111827; /* Latar belakang gelap untuk nuansa premium */
+            background-color: #111827;
         }
-        /* Style untuk efek transisi pada card */
         .monument-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            transform: scale(1);
         }
         .monument-card:hover {
             transform: scale(1.03);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
-        /* Animasi fade-in untuk elemen yang dimuat */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -33,7 +29,6 @@
         .fade-in {
             animation: fadeIn 0.5s ease-out forwards;
         }
-        /* Overlay untuk memblokir sentuhan */
         #touch-blocker {
             position: fixed;
             top: 0;
@@ -41,9 +36,8 @@
             width: 100vw;
             height: 100vh;
             z-index: 9999;
-            display: none; /* Awalnya disembunyikan */
+            display: none;
         }
-        /* Overlay untuk izin awal */
         #permission-overlay {
             position: fixed;
             top: 0;
@@ -63,18 +57,16 @@
 </head>
 <body class="antialiased text-white">
 
-    <!-- Overlay untuk meminta izin interaksi awal -->
+    <!-- Overlay untuk meminta izin, ini sangat penting untuk Safari -->
     <div id="permission-overlay">
         <div class="px-4">
             <h2 class="text-3xl font-bold">Selamat Datang</h2>
-            <p class="mt-2 text-lg text-gray-300">Ketuk di mana saja untuk memulai perjalanan Anda.</p>
+            <p class="mt-2 text-lg text-gray-300">Ketuk untuk memulai dan mengizinkan akses sensor gerak.</p>
         </div>
     </div>
     
-    <!-- Overlay untuk memblokir sentuhan saat HP terbalik -->
     <div id="touch-blocker"></div>
 
-    <!-- Section Hero -->
     <header class="relative h-96 flex items-center justify-center text-center overflow-hidden">
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=2070&auto=format&fit=crop" alt="Latar Belakang Monumen" class="w-full h-full object-cover opacity-30">
@@ -87,16 +79,11 @@
     </header>
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <!-- Container untuk loading state -->
         <div id="loading" class="text-center py-16">
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-400"></div>
             <p class="mt-4 text-gray-400">Sedang menyusun perjalanan Anda...</p>
         </div>
-
-        <!-- Container untuk layout grid asimetris -->
-        <main id="monuments-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 auto-rows-[25rem] gap-6">
-            <!-- Card monumen akan dimasukkan di sini oleh JavaScript -->
-        </main>
+        <main id="monuments-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 auto-rows-[25rem] gap-6"></main>
     </div>
 
     <script>
@@ -106,72 +93,69 @@
             const permissionOverlay = document.getElementById('permission-overlay');
             const touchBlocker = document.getElementById('touch-blocker');
 
-            // --- Logika Giroskop ---
-            let gyroTriggered = false; // Memastikan fitur gyro hanya berjalan sekali
+            // --- Logika Giroskop & Sensor Gerak ---
+            let gyroTriggered = false;
             let isFaceDown = false;
 
             const handleOrientation = (event) => {
-                // event.beta adalah sudut kemiringan depan-ke-belakang (-180 hingga 180)
-                // Ketika layar menghadap ke bawah, beta mendekati 180 atau -180
-                const beta = event.beta;
-
-                if (gyroTriggered) {
-                    return; // Hentikan jika sudah pernah dipicu
-                }
+                if (gyroTriggered || !event.beta) return;
                 
-                // Cek jika HP menghadap ke bawah
+                const beta = event.beta;
+                
                 if (!isFaceDown && (beta > 170 || beta < -170)) {
                     isFaceDown = true;
-                    
                     const statueOfLibertyCard = document.getElementById('monument-card-Statue-of-Liberty');
                     if (statueOfLibertyCard) {
                         statueOfLibertyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
-                    touchBlocker.style.display = 'block'; // Aktifkan blokir sentuhan
+                    touchBlocker.style.display = 'block';
                 } 
-                // Cek jika HP kembali ke posisi normal setelah menghadap ke bawah
                 else if (isFaceDown && (beta < 160 && beta > -160)) {
                     isFaceDown = false;
-                    gyroTriggered = true; // Tandai bahwa fitur sudah digunakan
-                    touchBlocker.style.display = 'none'; // Nonaktifkan blokir sentuhan
-                    
-                    // Hentikan listener untuk menghemat baterai dan mencegah pemicu berulang
+                    gyroTriggered = true;
+                    touchBlocker.style.display = 'none';
                     window.removeEventListener('deviceorientation', handleOrientation, true);
-                }
-            };
-
-            const requestGyroPermission = () => {
-                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    // Ini untuk iOS 13+
-                    DeviceOrientationEvent.requestPermission()
-                        .then(permissionState => {
-                            if (permissionState === 'granted') {
-                                window.addEventListener('deviceorientation', handleOrientation, true);
-                            }
-                        })
-                        .catch(console.error);
-                } else {
-                    // Untuk browser lain yang tidak memerlukan izin eksplisit
-                    window.addEventListener('deviceorientation', handleOrientation, true);
+                    console.log('Deteksi orientasi dihentikan setelah dipicu.');
                 }
             };
             
+            // Fungsi yang disempurnakan khusus untuk meminta izin di iOS/Safari
+            const requestMotionPermission = async () => {
+                // Pengecekan ini spesifik untuk Safari di iOS 13+
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    console.log('Perangkat ini mendukung DeviceOrientationEvent.requestPermission(). Mencoba meminta izin...');
+                    try {
+                        const permissionState = await DeviceOrientationEvent.requestPermission();
+                        if (permissionState === 'granted') {
+                            console.log('Izin akses orientasi perangkat DIBERIKAN.');
+                            window.addEventListener('deviceorientation', handleOrientation, true);
+                        } else {
+                            console.log(`Izin akses orientasi perangkat DITOLAK. Status: ${permissionState}`);
+                        }
+                    } catch (error) {
+                        console.error('Gagal saat meminta izin sensor:', error);
+                    }
+                } else if (typeof DeviceOrientationEvent !== 'undefined') {
+                    // Untuk Android atau browser non-Safari yang tidak memerlukan izin eksplisit
+                    console.log('Browser tidak memerlukan izin sensor eksplisit. Menambahkan listener secara langsung.');
+                    window.addEventListener('deviceorientation', handleOrientation, true);
+                } else {
+                    console.log('Browser tidak mendukung DeviceOrientationEvent.');
+                }
+            };
+            
+            // Event listener untuk overlay. Ini adalah "interaksi pengguna" yang dibutuhkan Safari.
             permissionOverlay.addEventListener('click', () => {
                 permissionOverlay.style.opacity = '0';
                 setTimeout(() => {
                     permissionOverlay.style.display = 'none';
                 }, 500);
-                requestGyroPermission();
+                requestMotionPermission();
             }, { once: true });
 
 
             // --- Logika Pemuatan Monumen ---
-            const monumentList = [
-                "Colosseum", "Great Wall of China", "Taj Mahal", "Machu Picchu", "Petra", "Eiffel Tower",
-                "Statue of Liberty", "Angkor Wat", "Borobudur", "Acropolis of Athens", "Chichen Itza",
-                "Christ the Redeemer (statue)", "Neuschwanstein Castle", "Sydney Opera House", "Forbidden City",
-                "Hagia Sophia", "Prambanan", "Leaning Tower of Pisa", "Brandenburg Gate", "Himeji Castle", "Sagrada Família",
-            ];
+            const monumentList = [ "Colosseum", "Great Wall of China", "Taj Mahal", "Machu Picchu", "Petra", "Eiffel Tower", "Statue of Liberty", "Angkor Wat", "Borobudur", "Acropolis of Athens", "Chichen Itza", "Christ the Redeemer (statue)", "Neuschwanstein Castle", "Sydney Opera House", "Forbidden City", "Hagia Sophia", "Prambanan", "Leaning Tower of Pisa", "Brandenburg Gate", "Himeji Castle", "Sagrada Família" ];
 
             const fetchMonumentData = async (monumentName) => {
                 const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages&piprop=thumbnail&pithumbsize=800&titles=${encodeURIComponent(monumentName)}&origin=*`;
@@ -185,17 +169,15 @@
                     const pageData = pages[pageId];
                     return {
                         title: pageData.title,
-                        imageUrl: pageData.thumbnail ? pageData.thumbnail.source : 'https://placehold.co/800x600/111827/4b5563?text=Gambar+Tidak+Tersedia'
+                        imageUrl: pageData.thumbnail ? pageData.thumbnail.source : `https://placehold.co/800x600/111827/4b5563?text=${encodeURIComponent(pageData.title)}`
                     };
                 } catch (error) {
                     console.error(`Gagal mengambil data untuk ${monumentName}:`, error);
-                    return null;
+                    return { title: monumentName, imageUrl: 'https://placehold.co/800x600/111827/4b5563?text=Gagal+Muat' };
                 }
             };
 
             const createMonumentCard = (monument, index) => {
-                if (!monument) return '';
-                
                 const uniqueId = `monument-card-${monument.title.replace(/[^a-zA-Z0-9]/g, '-')}`;
                 const wikipediaUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(monument.title)}`;
                 const isFeatured = index === 0;
@@ -219,12 +201,9 @@
             const loadMonuments = async () => {
                 loadingIndicator.style.display = 'block';
                 monumentsContainer.innerHTML = '';
-
                 const monumentDataPromises = monumentList.map(fetchMonumentData);
                 const monumentsData = await Promise.all(monumentDataPromises);
-                
                 loadingIndicator.style.display = 'none';
-
                 monumentsData.forEach((monument, index) => {
                     if (monument) {
                         monumentsContainer.innerHTML += createMonumentCard(monument, index);
