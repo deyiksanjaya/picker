@@ -29,24 +29,6 @@
         .fade-in {
             animation: fadeIn 0.5s ease-out forwards;
         }
-        #touch-blocker {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 9999;
-            background-color: rgb(0, 0, 0);
-            opacity: 0;
-            /* PERBAIKAN 1: Gunakan 'visibility' untuk jaminan blokir sentuhan */
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out;
-        }
-        #touch-blocker.visible {
-            opacity: 1;
-            /* PERBAIKAN 2: Aktifkan visibility saat elemen muncul */
-            visibility: visible;
-        }
         #permission-overlay {
             position: fixed;
             top: 0;
@@ -64,17 +46,15 @@
         }
     </style>
 </head>
-<body class="antialiased text-white">
+<body class="antaliases text-white">
 
     <div id="permission-overlay">
         <div class="px-4">
             <h2 class="text-3xl font-bold">Selamat Datang</h2>
-            <p class="mt-2 text-lg text-gray-300">Ketuk untuk memulai dan izinkan akses sensor gerak.</p>
+            <p class="mt-2 text-lg text-gray-300">Ketuk untuk memulai eksplorasi!</p>
         </div>
     </div>
     
-    <div id="touch-blocker"></div>
-
     <header class="relative h-96 flex items-center justify-center text-center overflow-hidden">
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=2070&auto=format&fit=crop" alt="Latar Belakang Monumen" class="w-full h-full object-cover opacity-30">
@@ -99,34 +79,41 @@
             const monumentsContainer = document.getElementById('monuments-container');
             const loadingIndicator = document.getElementById('loading');
             const permissionOverlay = document.getElementById('permission-overlay');
-            const touchBlocker = document.getElementById('touch-blocker');
 
-            let orientationTriggered = false;
-            let isFaceDown = false;
+            // --- PERUBAHAN: Logika orientasi dengan pemicu saat kembali ---
+            let orientationTriggered = false; // Memastikan seluruh fitur hanya berjalan sekali
+            let isFaceDown = false; // Melacak apakah perangkat sedang menghadap ke bawah
 
             const handleOrientation = (event) => {
                 if (orientationTriggered || event.beta === null) return;
 
                 const beta = event.beta;
 
-                if (!isFaceDown && (beta > 150 || beta < -150)) {
+                // Definisi kondisi yang lebih spesifik
+                const isCurrentlyFaceDown = beta > 170 || beta < -170; // Rentang sempit
+                const isReturningToNormal = beta < 90 && beta > -90; // Posisi tegak
+
+                // Langkah 1: Deteksi saat perangkat BARU SAJA menghadap ke bawah.
+                // Tidak ada aksi visual, hanya set status.
+                if (!isFaceDown && isCurrentlyFaceDown) {
                     isFaceDown = true;
-                    console.log("Perangkat menghadap ke bawah. Aksi dimulai.");
+                    console.log("Perangkat kini menghadap ke bawah. Menunggu untuk kembali...");
+                }
 
-                    touchBlocker.classList.add('visible');
+                // Langkah 2: Deteksi saat perangkat SUDAH menghadap ke bawah, dan KINI kembali ke normal.
+                // Ini adalah momen pemicunya.
+                else if (isFaceDown && isReturningToNormal) {
+                    orientationTriggered = true; // Kunci fitur agar tidak berjalan lagi
+                    isFaceDown = false; // Reset status
 
+                    console.log("Perangkat kembali normal. Melompat ke tujuan dan menonaktifkan fitur.");
+                    
                     const statueOfLibertyCard = document.getElementById('monument-card-Statue-of-Liberty');
                     if (statueOfLibertyCard) {
                         statueOfLibertyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
-                }
-                else if (isFaceDown && (beta < 90 && beta > -90)) {
-                    isFaceDown = false;
-                    orientationTriggered = true;
-                    console.log("Perangkat kembali normal. Fitur dinonaktifkan.");
-
-                    touchBlocker.classList.remove('visible');
-
+                    
+                    // Hentikan pendeteksian untuk menghemat baterai
                     window.removeEventListener('deviceorientation', handleOrientation, true);
                 }
             };
@@ -153,6 +140,7 @@
                 requestOrientationPermission();
             }, { once: true });
 
+            // --- Logika Pemuatan Monumen (Tidak Berubah) ---
             const monumentList = [ "Colosseum", "Great Wall of China", "Taj Mahal", "Machu Picchu", "Petra", "Eiffel Tower", "Statue of Liberty", "Angkor Wat", "Borobudur", "Acropolis of Athens", "Chichen Itza", "Christ the Redeemer (statue)", "Neuschwanstein Castle", "Sydney Opera House", "Forbidden City", "Hagia Sophia", "Prambanan", "Leaning Tower of Pisa", "Brandenburg Gate", "Himeji Castle", "Sagrada Família" ];
 
             const fetchMonumentData = async (monumentName) => {
