@@ -3,252 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divina</title>
-
-    <!-- === META TAG UNTUK WEB APP (PWA) === -->
-    <meta name="theme-color" content="#121212">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Divina">
-    <link rel="apple-touch-icon" href="https://placehold.co/192x192/121212/C0C0C0?text=BL">
-    <link rel="manifest" href="./manifest.json">
-    <!-- === AKHIR META TAG WEB APP === -->
-
-    <!-- Impor Font -->
+    <title>Monumen Bersejarah Dunia</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Lora:ital@1&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* CSS Reset dan Styling Dasar */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden; 
-            background-color: #121212;
-        }
-
+        /* Menggunakan font Inter sebagai default */
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #E0E0E0;
-            font-family: 'Lora', serif;
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Latar belakang gelap untuk nuansa premium */
         }
-
-        .content-wrapper {
-            text-align: center;
-            padding: 20px;
-            transition: opacity 0.5s ease-in-out;
+        /* Style untuk efek transisi pada card */
+        .monument-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform: scale(1);
         }
-
-        /* Styling teks */
-        #nama-bulan, #zodiak, #bulan-tanya {
-            font-family: 'Cinzel Decorative', cursive;
-            font-size: clamp(24px, 6vw, 42px);
-            text-shadow: 0 0 10px rgba(192, 192, 192, 0.3);
-            margin: 0;
-            line-height: 1.4;
+        .monument-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
-        #nama-bulan { color: #C0C0C0; }
-        #zodiak { color: #999; }
-        #bulan-tanya { color: #666; }
-        
-        #separator-line {
-            display: none;
-            margin: 20px auto;
-            width: 120px;
-            height: 2px;
-            background-color: #8B0000;
-            border-radius: 2px;
+        /* Animasi fade-in untuk elemen yang dimuat */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        /* Tombol Speaker */
-        #tts-button {
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        /* Overlay untuk memblokir sentuhan */
+        #touch-blocker {
             position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 50px;
-            height: 50px;
-            background-color: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 50%;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            display: none; /* Awalnya disembunyikan */
+        }
+        /* Overlay untuk izin awal */
+        #permission-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(17, 24, 39, 0.95);
+            z-index: 10000;
             display: flex;
             justify-content: center;
             align-items: center;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            opacity: 0.5; 
+            transition: opacity 0.5s ease;
         }
-        #tts-button svg { width: 50%; fill: #C0C0C0; transition: fill 0.3s ease; }
-        #tts-button.active {
-            opacity: 1; 
-            background-color: #4a4a4a; 
-            border-color: #ffffff; 
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
-        }
-        #tts-button.active svg { fill: #fff; }
     </style>
 </head>
-<body>
-    <!-- Konten utama -->
-    <div class="content-wrapper" id="wrapper">
-        <h1 id="nama-bulan">Menunggu...</h1>
-        <p id="zodiak"></p>
-        <div id="separator-line"></div>
-        <p id="bulan-tanya"></p>
+<body class="antialiased text-white">
+
+    <!-- Overlay untuk meminta izin interaksi awal -->
+    <div id="permission-overlay">
+        <div class="px-4">
+            <h2 class="text-3xl font-bold">Selamat Datang</h2>
+            <p class="mt-2 text-lg text-gray-300">Ketuk di mana saja untuk memulai perjalanan Anda.</p>
+        </div>
     </div>
     
-    <!-- Tombol Speaker untuk TTS -->
-    <button id="tts-button" aria-label="Aktifkan Text-to-Speech">
-        <!-- Ikon Speaker Mute (Default) -->
-        <svg class="speaker-icon" id="speaker-mute-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M320 64c0-12.6-7.4-24-18.9-29.2s-25-3.1-34.4 5.3L131.8 160H48c-26.5 0-48 21.5-48 48v96c0 26.5 21.5 48 48 48h83.8l135 119.9c9.4 8.4 22.9 10.4 34.4 5.3S320 459.4 320 446.8V64zM558.7 256l47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0L524.8 222.1l-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47z"/></svg>
-        <!-- Ikon Speaker On (Tersembunyi) -->
-        <svg class="speaker-icon" id="speaker-on-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M301.1 34.8C312.6 40 320 51.4 320 64V448c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352H48c-26.5 0-48-21.5-48-48V208c0-26.5 21.5-48 48-48h83.8L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3zM424.6 256c0-44.2-26.8-82.4-65.9-98.8C349.8 154.4 344 147.3 344 139c0-11.6 12.3-19.8 23.2-15.3C429.3 145.4 480 196.5 480 256s-50.7 110.6-112.8 132.3c-10.9 4.5-23.2-3.7-23.2-15.3c0-8.3 5.8-15.4 14.8-18.1c39.1-16.4 65.9-54.6 65.9-98.8zM504.6 256c0-67.6-39.6-126.5-98.8-153.2c-10.9-4.9-23.6 2.3-23.6 14.5c0 8.7 6.2 16.3 15.2 19.1c49.3 15.3 85.2 62.5 85.2 119.6s-35.9 104.3-85.2 119.6c-9 2.8-15.2 10.4-15.2 19.1c0 12.2 12.7 19.4 23.6 14.5C465 382.5 504.6 323.6 504.6 256z"/></svg>
-    </button>
+    <!-- Overlay untuk memblokir sentuhan saat HP terbalik -->
+    <div id="touch-blocker"></div>
 
-    <script type="module">
-        // Impor fungsi dari Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
-        import { getDatabase, ref, onValue, connectDatabaseEmulator } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
+    <!-- Section Hero -->
+    <header class="relative h-96 flex items-center justify-center text-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=2070&auto=format&fit=crop" alt="Latar Belakang Monumen" class="w-full h-full object-cover opacity-30">
+        </div>
+        <div class="absolute inset-0 bg-black/50 z-10"></div>
+        <div class="relative z-20 px-4">
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight">Keajaiban Dunia</h1>
+            <p class="mt-4 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">Sebuah perjalanan visual melintasi waktu, menjelajahi mahakarya arsitektur yang mendefinisikan peradaban manusia.</p>
+        </div>
+    </header>
 
-        // Konfigurasi Firebase
-        const firebaseConfig = {
-          apiKey: "AIzaSyBRrhdZgg-8MUt8BinjrUG2yZ5tYaREN7o",
-          authDomain: "photo-390e6.firebaseapp.com",
-          databaseURL: "https://photo-390e6-default-rtdb.asia-southeast1.firebasedatabase.app",
-          projectId: "photo-390e6",
-          storageBucket: "photo-390e6.firebasestorage.app",
-          messagingSenderId: "668941746361",
-          appId: "1:668941746361:web:2365def1f7b81f328b1b68",
-          measurementId: "G-ETW0DNJYJL"
-        };
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <!-- Container untuk loading state -->
+        <div id="loading" class="text-center py-16">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-400"></div>
+            <p class="mt-4 text-gray-400">Sedang menyusun perjalanan Anda...</p>
+        </div>
 
-        if (window.location.hostname === "localhost") {
-          console.log("Tampilan Gothic: Menghubungkan ke Emulator Database Lokal...");
-          connectDatabaseEmulator(database, "localhost", 9000);
-        }
+        <!-- Container untuk layout grid asimetris -->
+        <main id="monuments-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 auto-rows-[25rem] gap-6">
+            <!-- Card monumen akan dimasukkan di sini oleh JavaScript -->
+        </main>
+    </div>
 
-        // --- SETUP TTS ---
-        let isTtsEnabled = false; 
-        const ttsButton = document.getElementById('tts-button');
-        const speakerOnIcon = document.getElementById('speaker-on-icon');
-        const speakerMuteIcon = document.getElementById('speaker-mute-icon');
-        let currentText = ""; 
-        
-        ttsButton.addEventListener('click', () => {
-            isTtsEnabled = !isTtsEnabled; 
-            ttsButton.classList.toggle('active', isTtsEnabled);
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const monumentsContainer = document.getElementById('monuments-container');
+            const loadingIndicator = document.getElementById('loading');
+            const permissionOverlay = document.getElementById('permission-overlay');
+            const touchBlocker = document.getElementById('touch-blocker');
 
-            speakerOnIcon.style.display = isTtsEnabled ? 'block' : 'none';
-            speakerMuteIcon.style.display = isTtsEnabled ? 'none' : 'block';
+            // --- Logika Giroskop ---
+            let gyroTriggered = false; // Memastikan fitur gyro hanya berjalan sekali
+            let isFaceDown = false;
 
-            if (isTtsEnabled) {
-                if (!currentText) {
-                    speak("voice activated");
-                } else {
-                    speak(currentText);
-                }
-            } else {
-                window.speechSynthesis.cancel();
-            }
-        });
+            const handleOrientation = (event) => {
+                // event.beta adalah sudut kemiringan depan-ke-belakang (-180 hingga 180)
+                // Ketika layar menghadap ke bawah, beta mendekati 180 atau -180
+                const beta = event.beta;
 
-        // Fungsi untuk membacakan teks
-        function speak(text) {
-            if (!text) return;
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(text);
-            if (text === "voice activated") {
-                utterance.lang = 'en-US';
-            } else {
-                utterance.lang = 'id-ID'; 
-            }
-            window.speechSynthesis.speak(utterance);
-        }
-
-        // --- Logika Utama Firebase ---
-        const karakterBulanRef = ref(database, 'kontrol/karakterBulan');
-        const wrapper = document.getElementById('wrapper');
-        const namaBulanElem = document.getElementById('nama-bulan');
-        const zodiakElem = document.getElementById('zodiak');
-        const tanyaElem = document.getElementById('bulan-tanya');
-        const separatorLine = document.getElementById('separator-line');
-        
-        let isInitialLoad = true;
-
-        onValue(karakterBulanRef, (snapshot) => {
-            if (isInitialLoad) {
-                isInitialLoad = false;
-                return; 
-            }
-
-            wrapper.style.opacity = 0;
-
-            setTimeout(() => {
-                let textToSpeak = "";
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    const bulan = data.namaBulan || "";
-                    
-                    namaBulanElem.textContent = bulan;
-                    zodiakElem.textContent = data.kemungkinanZodiak || "";
-
-                    let pertanyaan = "";
-                    switch (bulan) {
-                        case "Januari":   pertanyaan = "Q"; break;
-                        case "Februari":  pertanyaan = "A"; break;
-                        case "Maret":     pertanyaan = "R"; break;
-                        case "April":     pertanyaan = "E"; break;
-                        case "Mei":       pertanyaan = "U"; break;
-                        case "Juni":      pertanyaan = "G"; break;
-                        case "Juli":      pertanyaan = "L"; break;
-                        case "Agustus":   pertanyaan = "V"; break;
-                        case "September": pertanyaan = "B"; break;
-                        case "Oktober":   pertanyaan = "O"; break;
-                        case "November":  pertanyaan = "T"; break;
-                        case "Desember":  pertanyaan = "S"; break;
-                    }
-                    tanyaElem.textContent = pertanyaan;
-                    separatorLine.style.display = 'block';
-
-                    textToSpeak = `${bulan}. ${data.kemungkinanZodiak}. ${pertanyaan}.`;
-                } else {
-                    namaBulanElem.textContent = "Menunggu...";
-                    zodiakElem.textContent = "";
-                    tanyaElem.textContent = "";
-                    separatorLine.style.display = 'none';
-                    textToSpeak = "";
+                if (gyroTriggered) {
+                    return; // Hentikan jika sudah pernah dipicu
                 }
                 
-                currentText = textToSpeak;
-
-                if (isTtsEnabled) {
-                    speak(currentText);
+                // Cek jika HP menghadap ke bawah
+                if (!isFaceDown && (beta > 170 || beta < -170)) {
+                    isFaceDown = true;
+                    
+                    const statueOfLibertyCard = document.getElementById('monument-card-Statue-of-Liberty');
+                    if (statueOfLibertyCard) {
+                        statueOfLibertyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    touchBlocker.style.display = 'block'; // Aktifkan blokir sentuhan
+                } 
+                // Cek jika HP kembali ke posisi normal setelah menghadap ke bawah
+                else if (isFaceDown && (beta < 160 && beta > -160)) {
+                    isFaceDown = false;
+                    gyroTriggered = true; // Tandai bahwa fitur sudah digunakan
+                    touchBlocker.style.display = 'none'; // Nonaktifkan blokir sentuhan
+                    
+                    // Hentikan listener untuk menghemat baterai dan mencegah pemicu berulang
+                    window.removeEventListener('deviceorientation', handleOrientation, true);
                 }
+            };
 
-                wrapper.style.opacity = 1;
-            }, 500); 
+            const requestGyroPermission = () => {
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    // Ini untuk iOS 13+
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                window.addEventListener('deviceorientation', handleOrientation, true);
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    // Untuk browser lain yang tidak memerlukan izin eksplisit
+                    window.addEventListener('deviceorientation', handleOrientation, true);
+                }
+            };
+            
+            permissionOverlay.addEventListener('click', () => {
+                permissionOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    permissionOverlay.style.display = 'none';
+                }, 500);
+                requestGyroPermission();
+            }, { once: true });
+
+
+            // --- Logika Pemuatan Monumen ---
+            const monumentList = [
+                "Colosseum", "Great Wall of China", "Taj Mahal", "Machu Picchu", "Petra", "Eiffel Tower",
+                "Statue of Liberty", "Angkor Wat", "Borobudur", "Acropolis of Athens", "Chichen Itza",
+                "Christ the Redeemer (statue)", "Neuschwanstein Castle", "Sydney Opera House", "Forbidden City",
+                "Hagia Sophia", "Prambanan", "Leaning Tower of Pisa", "Brandenburg Gate", "Himeji Castle", "Sagrada Família",
+            ];
+
+            const fetchMonumentData = async (monumentName) => {
+                const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages&piprop=thumbnail&pithumbsize=800&titles=${encodeURIComponent(monumentName)}&origin=*`;
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    const pages = data.query.pages;
+                    const pageId = Object.keys(pages)[0];
+                    if (pageId === "-1") return null;
+                    const pageData = pages[pageId];
+                    return {
+                        title: pageData.title,
+                        imageUrl: pageData.thumbnail ? pageData.thumbnail.source : 'https://placehold.co/800x600/111827/4b5563?text=Gambar+Tidak+Tersedia'
+                    };
+                } catch (error) {
+                    console.error(`Gagal mengambil data untuk ${monumentName}:`, error);
+                    return null;
+                }
+            };
+
+            const createMonumentCard = (monument, index) => {
+                if (!monument) return '';
+                
+                const uniqueId = `monument-card-${monument.title.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                const wikipediaUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(monument.title)}`;
+                const isFeatured = index === 0;
+                const gridClasses = isFeatured ? 'lg:col-span-2 lg:row-span-2' : 'lg:col-span-1 lg:row-span-1';
+                const titleFontSize = isFeatured ? 'text-4xl' : 'text-2xl';
+
+                return `
+                    <div id="${uniqueId}" class="monument-card fade-in group relative rounded-2xl overflow-hidden cursor-pointer ${gridClasses}" style="animation-delay: ${index * 100}ms;" onclick="window.open('${wikipediaUrl}', '_blank')">
+                        <img src="${monument.imageUrl}" alt="Gambar ${monument.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.onerror=null;this.src='https://placehold.co/800x600/111827/4b5563?text=Gagal+Muat';">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 p-6 w-full">
+                            <h2 class="${titleFontSize} font-bold tracking-tight">${monument.title}</h2>
+                            <button class="mt-2 text-left opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm text-white font-semibold py-2 px-4 rounded-lg hover:bg-white/30">
+                                Jelajahi &rarr;
+                            </button>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const loadMonuments = async () => {
+                loadingIndicator.style.display = 'block';
+                monumentsContainer.innerHTML = '';
+
+                const monumentDataPromises = monumentList.map(fetchMonumentData);
+                const monumentsData = await Promise.all(monumentDataPromises);
+                
+                loadingIndicator.style.display = 'none';
+
+                monumentsData.forEach((monument, index) => {
+                    if (monument) {
+                        monumentsContainer.innerHTML += createMonumentCard(monument, index);
+                    }
+                });
+            };
+
+            loadMonuments();
         });
-        if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => {
-          console.log('✅ Service Worker registered!', reg);
-        }).catch(err => {
-          console.warn('❌ Service Worker failed:', err);
-        });
-    });
-  }
     </script>
+
 </body>
 </html>
