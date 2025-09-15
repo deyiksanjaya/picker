@@ -38,12 +38,14 @@
             z-index: 9999;
             background-color: rgb(0, 0, 0);
             opacity: 0;
-            pointer-events: none;
+            /* PERBAIKAN 1: Gunakan 'visibility' untuk jaminan blokir sentuhan */
+            visibility: hidden;
             transition: opacity 0.3s ease-in-out;
         }
         #touch-blocker.visible {
             opacity: 1;
-            pointer-events: auto;
+            /* PERBAIKAN 2: Aktifkan visibility saat elemen muncul */
+            visibility: visible;
         }
         #permission-overlay {
             position: fixed;
@@ -99,17 +101,14 @@
             const permissionOverlay = document.getElementById('permission-overlay');
             const touchBlocker = document.getElementById('touch-blocker');
 
-            // --- PERBAIKAN: Logika kembali ke deteksi orientasi (face down) ---
-            let orientationTriggered = false; // Memastikan seluruh fitur hanya berjalan sekali
-            let isFaceDown = false; // Melacak status perangkat saat ini
+            let orientationTriggered = false;
+            let isFaceDown = false;
 
             const handleOrientation = (event) => {
                 if (orientationTriggered || event.beta === null) return;
 
-                const beta = event.beta; // Tilt depan-belakang
+                const beta = event.beta;
 
-                // Kondisi Pemicu: Perangkat belum dalam mode face-down, dan sekarang dimiringkan
-                // lebih dari 150 derajat (cukup menghadap ke bawah).
                 if (!isFaceDown && (beta > 150 || beta < -150)) {
                     isFaceDown = true;
                     console.log("Perangkat menghadap ke bawah. Aksi dimulai.");
@@ -121,11 +120,9 @@
                         statueOfLibertyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }
-                // Kondisi Kembali: Perangkat sudah dalam mode face-down, dan sekarang dikembalikan
-                // ke posisi normal (kurang dari 90 derajat).
                 else if (isFaceDown && (beta < 90 && beta > -90)) {
                     isFaceDown = false;
-                    orientationTriggered = true; // Kunci fitur secara permanen
+                    orientationTriggered = true;
                     console.log("Perangkat kembali normal. Fitur dinonaktifkan.");
 
                     touchBlocker.classList.remove('visible');
@@ -135,7 +132,6 @@
             };
 
             const requestOrientationPermission = () => {
-                // Spesifik untuk Safari di iOS 13+
                 if (typeof DeviceOrientationEvent.requestPermission === 'function') {
                     DeviceOrientationEvent.requestPermission()
                         .then(permissionState => {
@@ -145,7 +141,6 @@
                         })
                         .catch(console.error);
                 } else {
-                    // Untuk browser lain
                     window.addEventListener('deviceorientation', handleOrientation, true);
                 }
             };
@@ -158,7 +153,6 @@
                 requestOrientationPermission();
             }, { once: true });
 
-            // --- Logika Pemuatan Monumen (Tidak Berubah) ---
             const monumentList = [ "Colosseum", "Great Wall of China", "Taj Mahal", "Machu Picchu", "Petra", "Eiffel Tower", "Statue of Liberty", "Angkor Wat", "Borobudur", "Acropolis of Athens", "Chichen Itza", "Christ the Redeemer (statue)", "Neuschwanstein Castle", "Sydney Opera House", "Forbidden City", "Hagia Sophia", "Prambanan", "Leaning Tower of Pisa", "Brandenburg Gate", "Himeji Castle", "Sagrada Família" ];
 
             const fetchMonumentData = async (monumentName) => {
