@@ -30,16 +30,18 @@
             animation: fadeIn 0.5s ease-out forwards;
         }
         #touch-blocker {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 9999;
-            display: none;
-            /* PERBAIKAN: Menambahkan background transparan agar bisa menangkap event sentuhan */
-            background-color: transparent;
-        }
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: none;
+
+    /* ini yang penting */
+    background-color: rgba(0,0,0,0); 
+    pointer-events: all;
+}
         #permission-overlay {
             position: fixed;
             top: 0;
