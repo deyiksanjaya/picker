@@ -30,18 +30,21 @@
             animation: fadeIn 0.5s ease-out forwards;
         }
         #touch-blocker {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 9999;
-    display: none;
-
-    /* ini yang penting */
-    background-color: rgba(0,0,0,0); 
-    pointer-events: all;
-}
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            background-color: rgb(0, 0, 0);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        #touch-blocker.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
         #permission-overlay {
             position: fixed;
             top: 0;
@@ -61,11 +64,10 @@
 </head>
 <body class="antialiased text-white">
 
-    <!-- Overlay untuk meminta izin, ini sangat penting untuk Safari -->
     <div id="permission-overlay">
         <div class="px-4">
             <h2 class="text-3xl font-bold">Selamat Datang</h2>
-            <p class="mt-2 text-lg text-gray-300">Ketuk untuk memulai dan mengizinkan akses sensor gerak.</p>
+            <p class="mt-2 text-lg text-gray-300">Ketuk untuk memulai dan izinkan akses sensor gerak.</p>
         </div>
     </div>
     
@@ -97,79 +99,77 @@
             const permissionOverlay = document.getElementById('permission-overlay');
             const touchBlocker = document.getElementById('touch-blocker');
 
-            // --- Logika Giroskop & Sensor Gerak (Disempurnakan) ---
-            let gyroTriggered = false;
-            let isFaceDown = false;
+            // --- PERBAIKAN: Logika kembali ke deteksi orientasi (face down) ---
+            let orientationTriggered = false; // Memastikan seluruh fitur hanya berjalan sekali
+            let isFaceDown = false; // Melacak status perangkat saat ini
 
-            // Fungsi ini menangani logika orientasi setelah izin diberikan
             const handleOrientation = (event) => {
-                if (gyroTriggered || event.beta === null) return;
-                
-                const beta = event.beta; // Tilt depan-belakang (-180 hingga 180)
-                
-                // Kondisi 1: Perangkat BELUM dalam kondisi face-down, DAN sekarang TILT-nya menunjukkan face-down.
-                if (!isFaceDown && (beta > 165 || beta < -165)) {
+                if (orientationTriggered || event.beta === null) return;
+
+                const beta = event.beta; // Tilt depan-belakang
+
+                // Kondisi Pemicu: Perangkat belum dalam mode face-down, dan sekarang dimiringkan
+                // lebih dari 150 derajat (cukup menghadap ke bawah).
+                if (!isFaceDown && (beta > 150 || beta < -150)) {
                     isFaceDown = true;
+                    console.log("Perangkat menghadap ke bawah. Aksi dimulai.");
+
+                    touchBlocker.classList.add('visible');
+
                     const statueOfLibertyCard = document.getElementById('monument-card-Statue-of-Liberty');
                     if (statueOfLibertyCard) {
                         statueOfLibertyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
-                    touchBlocker.style.display = 'block';
-                } 
-                // Kondisi 2: Perangkat SUDAH dalam kondisi face-down, DAN sekarang TILT-nya KEMBALI normal.
-                else if (isFaceDown && (beta < 150 && beta > -150)) {
+                }
+                // Kondisi Kembali: Perangkat sudah dalam mode face-down, dan sekarang dikembalikan
+                // ke posisi normal (kurang dari 90 derajat).
+                else if (isFaceDown && (beta < 90 && beta > -90)) {
                     isFaceDown = false;
-                    gyroTriggered = true; // Kunci fitur agar tidak berjalan lagi
-                    touchBlocker.style.display = 'none';
-                    // Hapus event listener untuk menghemat baterai
+                    orientationTriggered = true; // Kunci fitur secara permanen
+                    console.log("Perangkat kembali normal. Fitur dinonaktifkan.");
+
+                    touchBlocker.classList.remove('visible');
+
                     window.removeEventListener('deviceorientation', handleOrientation, true);
                 }
             };
-            
-            // Fungsi untuk meminta izin akses sensor
-            const requestMotionPermission = async () => {
-                // Pengecekan ini spesifik untuk Safari di iOS 13+
-                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    try {
-                        const permissionState = await DeviceOrientationEvent.requestPermission();
-                        if (permissionState === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation, true);
-                        }
-                    } catch (error) {
-                        console.error('Gagal saat meminta izin sensor:', error);
-                    }
-                } else if (typeof DeviceOrientationEvent !== 'undefined') {
-                    // Untuk Android atau browser lain yang tidak memerlukan izin eksplisit
+
+            const requestOrientationPermission = () => {
+                // Spesifik untuk Safari di iOS 13+
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                window.addEventListener('deviceorientation', handleOrientation, true);
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    // Untuk browser lain
                     window.addEventListener('deviceorientation', handleOrientation, true);
                 }
             };
-            
-            // Event listener untuk overlay. Ini adalah "interaksi pengguna" yang dibutuhkan Safari.
+
             permissionOverlay.addEventListener('click', () => {
                 permissionOverlay.style.opacity = '0';
                 setTimeout(() => {
                     permissionOverlay.style.display = 'none';
                 }, 500);
-                requestMotionPermission();
+                requestOrientationPermission();
             }, { once: true });
 
-
-            // --- Logika Pemuatan Monumen ---
+            // --- Logika Pemuatan Monumen (Tidak Berubah) ---
             const monumentList = [ "Colosseum", "Great Wall of China", "Taj Mahal", "Machu Picchu", "Petra", "Eiffel Tower", "Statue of Liberty", "Angkor Wat", "Borobudur", "Acropolis of Athens", "Chichen Itza", "Christ the Redeemer (statue)", "Neuschwanstein Castle", "Sydney Opera House", "Forbidden City", "Hagia Sophia", "Prambanan", "Leaning Tower of Pisa", "Brandenburg Gate", "Himeji Castle", "Sagrada Família" ];
 
             const fetchMonumentData = async (monumentName) => {
                 const apiUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages&piprop=thumbnail&pithumbsize=800&titles=${encodeURIComponent(monumentName)}&origin=*`;
                 try {
                     const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error('Network response was not ok');
                     const data = await response.json();
-                    const pages = data.query.pages;
-                    const pageId = Object.keys(pages)[0];
-                    if (pageId === "-1") return null;
-                    const pageData = pages[pageId];
+                    const page = Object.values(data.query.pages)[0];
                     return {
-                        title: pageData.title,
-                        imageUrl: pageData.thumbnail ? pageData.thumbnail.source : `https://placehold.co/800x600/111827/4b5563?text=${encodeURIComponent(pageData.title)}`
+                        title: page.title,
+                        imageUrl: page.thumbnail ? page.thumbnail.source : `https://placehold.co/800x600/111827/4b5563?text=${encodeURIComponent(page.title)}`
                     };
                 } catch (error) {
                     return { title: monumentName, imageUrl: 'https://placehold.co/800x600/111827/4b5563?text=Gagal+Muat' };
@@ -185,7 +185,7 @@
 
                 return `
                     <div id="${uniqueId}" class="monument-card fade-in group relative rounded-2xl overflow-hidden cursor-pointer ${gridClasses}" style="animation-delay: ${index * 100}ms;" onclick="window.open('${wikipediaUrl}', '_blank')">
-                        <img src="${monument.imageUrl}" alt="Gambar ${monument.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.onerror=null;this.src='https://placehold.co/800x600/111827/4b5563?text=Gagal+Muat';">
+                        <img src="${monument.imageUrl}" alt="Gambar ${monument.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.onerror=null;this.src='https.co/800x600/111827/4b5563?text=Gagal+Muat';">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 p-6 w-full">
                             <h2 class="${titleFontSize} font-bold tracking-tight">${monument.title}</h2>
@@ -200,8 +200,7 @@
             const loadMonuments = async () => {
                 loadingIndicator.style.display = 'block';
                 monumentsContainer.innerHTML = '';
-                const monumentDataPromises = monumentList.map(fetchMonumentData);
-                const monumentsData = await Promise.all(monumentDataPromises);
+                const monumentsData = await Promise.all(monumentList.map(fetchMonumentData));
                 loadingIndicator.style.display = 'none';
                 monumentsData.forEach((monument, index) => {
                     if (monument) {
