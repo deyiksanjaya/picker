@@ -203,7 +203,7 @@
             }, 2500);
         }
 
-        // --- FUNGSI UTAMA: Diperbarui dengan penanganan kesalahan yang lebih baik ---
+        // --- FUNGSI UTAMA: Diperbarui untuk menyalin Base64 sebagai Teks ---
         async function handleBoardTap() {
             if (!settings.shortcutName) {
                 showNotification('Harap atur Nama Pintasan terlebih dahulu.');
@@ -213,43 +213,36 @@
                 }, 500);
                 return;
             }
-
-            // Periksa apakah API yang diperlukan didukung oleh browser
-            if (!navigator.clipboard || !window.ClipboardItem) {
-                 showNotification('Browser Anda tidak mendukung penyalinan gambar.');
-                 console.error('Clipboard API atau ClipboardItem tidak didukung.');
-                 return;
-            }
             
+            if (!navigator.clipboard || !navigator.clipboard.writeText) {
+                showNotification('Browser Anda tidak mendukung penyalinan teks.');
+                return;
+            }
+
             try {
-                // Hasilkan gambar di canvas
+                // 1. Hasilkan gambar dan dapatkan Data URL (Base64)
                 generateOutputImageOnCanvas(latestBoardData, settings.imageFormat);
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const dataUrl = canvas.toDataURL('image/png');
 
-                // Coba salin gambar ke clipboard
-                try {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({ 'image/png': blob })
-                    ]);
-                } catch (copyError) {
-                    console.error('Gagal menyalin gambar:', copyError);
-                    showNotification('Gagal menyalin gambar ke clipboard.');
-                    return; // Hentikan proses jika penyalinan gagal
-                }
+                // 2. Salin Data URL sebagai teks ke clipboard
+                await navigator.clipboard.writeText(dataUrl);
+                showNotification('Gambar Base64 berhasil disalin!');
 
-                // Coba jalankan pintasan setelah berhasil menyalin
-                try {
-                    const encodedShortcutName = encodeURIComponent(settings.shortcutName);
-                    const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}`;
-                    window.location.href = shortcutUrl;
-                } catch (shortcutError) {
-                    console.error('Gagal menjalankan pintasan:', shortcutError);
-                    showNotification('Gagal menjalankan pintasan. Pastikan nama sudah benar.');
-                }
+                // 3. Beri jeda singkat lalu jalankan pintasan
+                setTimeout(() => {
+                    try {
+                        const encodedShortcutName = encodeURIComponent(settings.shortcutName);
+                        const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}`;
+                        window.location.href = shortcutUrl;
+                    } catch (shortcutError) {
+                        console.error('Gagal menjalankan pintasan:', shortcutError);
+                        showNotification('Gagal menjalankan pintasan.');
+                    }
+                }, 500); // Jeda 0.5 detik
 
             } catch (err) {
-                console.error('Proses umum gagal:', err);
-                showNotification('Terjadi kesalahan yang tidak terduga.');
+                console.error('Gagal menyalin Base64:', err);
+                showNotification('Gagal menyalin gambar ke clipboard.');
             }
         }
         
