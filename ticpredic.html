@@ -66,7 +66,8 @@
     </div>
     
     <div class="main-container">
-        <img id="board-image" src="" alt="Papan Permainan">
+        <!-- pakai 1x1 transparan biar bisa diklik sejak awal -->
+        <img id="board-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Papan Permainan">
     </div>
 
     <script type="module">
@@ -129,7 +130,6 @@
             boardImage.src = canvas.toDataURL('image/png');
         }
         
-        // Fungsi ini hanya menggambar di kanvas, tidak mengembalikan apa-apa
         function generateOutputImageOnCanvas(boardData, format) {
             const ctx = canvas.getContext('2d');
             let boardSize, canvasWidth, canvasHeight;
@@ -138,7 +138,7 @@
                 canvasWidth = 420;
                 canvasHeight = 910;
                 boardSize = 420;
-            } else { // 'square'
+            } else {
                 canvasWidth = 512;
                 canvasHeight = 512;
                 boardSize = 512;
@@ -181,8 +181,9 @@
             });
         }
 
-
         async function handleBoardTap() {
+            console.log("Board image clicked"); // debug log
+
             if (!settings.shortcutName) {
                 settingsBtn.click();
                 shortcutNameInput.focus();
@@ -190,25 +191,23 @@
             }
             
             try {
-                // 1. Siapkan kanvas dengan gambar output yang benar
                 generateOutputImageOnCanvas(latestBoardData, settings.imageFormat);
-                
-                // 2. Ubah kanvas menjadi Blob (data gambar mentah)
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                
-                // 3. Salin Blob gambar ke papan klip
-                await navigator.clipboard.write([
-                    new ClipboardItem({ 'image/png': blob })
-                ]);
 
-                // 4. Redirect untuk menjalankan Pintasan
+                if (navigator.clipboard && window.ClipboardItem) {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                } else {
+                    console.warn("Clipboard API untuk gambar tidak didukung di browser ini.");
+                }
+
                 const encodedShortcutName = encodeURIComponent(settings.shortcutName);
                 const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}`;
                 window.location.href = shortcutUrl;
 
             } catch (err) {
                 console.error('Proses gagal:', err);
-                // Di sini kita bisa menambahkan notifikasi jika diperlukan, tapi sekarang kita hilangkan
             }
         }
         
