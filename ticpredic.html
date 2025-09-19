@@ -35,19 +35,18 @@
 </head>
 <body class="flex items-center justify-center min-h-screen">
 
-    <!-- Tombol Pengaturan -->
-    <button id="settings-btn" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md">
+    <!-- Pengaturan Posisi Tombol (FIX) -->
+    <button id="settings-btn" class="absolute top-5 right-5 z-20 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </button>
 
-    <!-- Panel Pengaturan -->
+    <!-- Panel Pengaturan (Disederhanakan) -->
     <div id="settings-panel" class="hidden absolute inset-0 z-10 bg-black/40 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Pengaturan Aksi Ketukan</h2>
-            <div class="space-y-4">
-                <div><input type="radio" id="action-download" name="action-type" value="download" class="mr-2"><label for="action-download" class="text-gray-700">Simpan & Buka Foto</label></div>
-                <div><input type="radio" id="action-shortcut" name="action-type" value="shortcut" class="mr-2"><label for="action-shortcut" class="text-gray-700">Kirim ke Pintasan</label></div>
-                <input type="text" id="shortcut-name" placeholder="Nama Pintasan..." class="mt-2 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Pengaturan Pintasan</h2>
+            <div class="space-y-2">
+                <label for="shortcut-name" class="text-gray-700 font-medium">Nama Pintasan:</label>
+                <input type="text" id="shortcut-name" placeholder="Contoh: ProsesGambar" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="mt-6 flex justify-end"><button id="save-settings-btn" class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Simpan</button></div>
         </div>
@@ -85,116 +84,56 @@
         const shortcutNameInput = document.getElementById('shortcut-name');
         const toast = document.getElementById('toast-notification');
 
-        let settings = { actionType: 'download', shortcutName: '' };
-        let firstTapInPhotoMode = false;
+        let settings = { shortcutName: '' };
         const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-
+        
         function renderBoardToCanvas(boardData) {
-            // Fungsi untuk menggambar kondisi papan ke canvas tersembunyi
-            const size = 512; // Resolusi HD untuk gambar
-            canvas.width = size;
-            canvas.height = size;
-            const cellSize = size / 3;
-            const lineThickness = 6;
-
-            // 1. Gambar latar belakang putih
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, size, size);
-
-            // 2. Gambar garis grid (FIX: Warna dibuat lebih gelap agar terlihat)
-            ctx.strokeStyle = '#CBD5E1'; // Warna abu-abu yang lebih kontras
-            ctx.lineWidth = lineThickness;
-            ctx.beginPath(); // Mulai path sekali saja untuk semua garis
+            const ctx = canvas.getContext('2d');
+            const size = 512; canvas.width = size; canvas.height = size;
+            const cellSize = size / 3; const lineThickness = 6;
+            ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, size, size);
+            ctx.strokeStyle = '#CBD5E1'; ctx.lineWidth = lineThickness;
+            ctx.beginPath();
             for (let i = 1; i < 3; i++) {
-                // Garis vertikal
-                ctx.moveTo(i * cellSize, 0);
-                ctx.lineTo(i * cellSize, size);
-                // Garis horizontal
-                ctx.moveTo(0, i * cellSize);
-                ctx.lineTo(size, i * cellSize);
+                ctx.moveTo(i * cellSize, 0); ctx.lineTo(i * cellSize, size);
+                ctx.moveTo(0, i * cellSize); ctx.lineTo(size, i * cellSize);
             }
-            ctx.stroke(); // Gambar semua garis dalam satu panggilan
-
-            // 3. Gambar simbol X dan O
+            ctx.stroke();
             ctx.font = `bold ${cellSize * 0.7}px Poppins`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             boardData.forEach((value, index) => {
-                if (!value) return; // Lewati sel kosong
-                const row = Math.floor(index / 3);
-                const col = index % 3;
-                const x = col * cellSize + cellSize / 2;
-                const y = row * cellSize + cellSize / 2;
+                if (!value) return;
+                const row = Math.floor(index / 3); const col = index % 3;
+                const x = col * cellSize + cellSize / 2; const y = row * cellSize + cellSize / 2;
                 ctx.fillStyle = value === 'X' ? '#EF4444' : '#3B82F6';
                 ctx.fillText(value, x, y);
             });
-            
-            // 4. Atur hasil canvas sebagai sumber gambar yang terlihat
             boardImage.src = canvas.toDataURL('image/png');
         }
 
-        function dataURLtoFile(dataurl, filename) {
-            let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while(n--){
-                u8arr[n] = bstr.charCodeAt(n);
+        function handleBoardTap() {
+            if (!settings.shortcutName) {
+                showToast('Silakan isi nama Pintasan di pengaturan.');
+                return;
             }
-            return new File([u8arr], filename, {type:mime});
-        }
-
-        async function handleBoardTap() {
-            if (settings.actionType === 'download') {
-                if (!firstTapInPhotoMode) {
-                    try {
-                        const file = dataURLtoFile(canvas.toDataURL('image/png'), 'board-image.png');
-                        if (navigator.share && navigator.canShare({ files: [file] })) {
-                            await navigator.share({
-                                files: [file],
-                                title: 'Catatan Papan',
-                                text: 'Gambar dari papan catatan.'
-                            });
-                            showToast('Gambar dibagikan. Ketuk lagi untuk buka Foto.');
-                            firstTapInPhotoMode = true;
-                        } else {
-                            showToast('Gunakan menu browser untuk menyimpan gambar.');
-                        }
-                    } catch (error) {
-                        console.log('Share dibatalkan oleh pengguna.', error);
-                        firstTapInPhotoMode = false; 
-                    }
-                } else {
-                    window.location.href = 'photos-redirect://';
-                    firstTapInPhotoMode = false;
-                }
-            } else if (settings.actionType === 'shortcut') {
-                if (!settings.shortcutName) {
-                    showToast('Silakan isi nama Pintasan di pengaturan.');
-                    return;
-                }
-                const base64Image = canvas.toDataURL('image/png');
-                const encodedShortcutName = encodeURIComponent(settings.shortcutName);
-                const shortcutUrl = `shortcut://run-shortcut?name=${encodedShortcutName}&input=text&text=${base64Image}`;
-                window.location.href = shortcutUrl;
-            }
+            const base64Image = canvas.toDataURL('image/png');
+            const encodedShortcutName = encodeURIComponent(settings.shortcutName);
+            // FIX: URL diubah ke format yang benar untuk MENJALANKAN Pintasan dengan input data
+            const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}&input=text&text=${base64Image}`;
+            window.location.href = shortcutUrl;
         }
         
         function saveSettings() {
-            settings.actionType = document.querySelector('input[name="action-type"]:checked').value;
             settings.shortcutName = shortcutNameInput.value.trim();
             localStorage.setItem('appSettings', JSON.stringify(settings));
             settingsPanel.classList.add('hidden');
             showToast('Pengaturan disimpan.');
-            firstTapInPhotoMode = false;
         }
 
         function loadSettings() {
             const savedSettings = JSON.parse(localStorage.getItem('appSettings'));
             if (savedSettings) settings = savedSettings;
-            document.querySelector(`input[name="action-type"][value="${settings.actionType}"]`).checked = true;
             shortcutNameInput.value = settings.shortcutName;
-            toggleShortcutInput();
-            firstTapInPhotoMode = false;
         }
 
         function showToast(message) {
@@ -206,10 +145,7 @@
             }, 3000);
         }
 
-        function toggleShortcutInput() {
-            shortcutNameInput.disabled = document.querySelector('#action-shortcut').checked === false;
-        }
-
+        // --- Pemasangan Event Listener ---
         onValue(gameRef, (snapshot) => {
             const finalBoard = Array(9).fill(null);
             if (snapshot.exists()) {
@@ -228,9 +164,9 @@
         settingsBtn.addEventListener('click', () => settingsPanel.classList.remove('hidden'));
         saveSettingsBtn.addEventListener('click', saveSettings);
         settingsPanel.addEventListener('click', (e) => { if (e.target === settingsPanel) settingsPanel.classList.add('hidden'); });
-        document.querySelectorAll('input[name="action-type"]').forEach(radio => radio.addEventListener('change', toggleShortcutInput));
         boardImage.addEventListener('click', handleBoardTap);
         
+        // --- Inisialisasi Aplikasi ---
         loadSettings();
     </script>
     <script> if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); } </script>
