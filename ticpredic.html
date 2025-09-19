@@ -35,12 +35,10 @@
 </head>
 <body class="flex items-center justify-center min-h-screen">
 
-    <!-- Pengaturan Posisi Tombol (FIX) -->
     <button id="settings-btn" class="absolute top-5 right-5 z-20 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </button>
 
-    <!-- Panel Pengaturan (Disederhanakan) -->
     <div id="settings-panel" class="hidden absolute inset-0 z-10 bg-black/40 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4">Pengaturan Pintasan</h2>
@@ -52,12 +50,10 @@
         </div>
     </div>
     
-    <!-- Kontainer Papan Utama -->
     <div class="main-container">
         <img id="board-image" src="" alt="Papan Permainan">
     </div>
 
-    <!-- Notifikasi Toast -->
     <div id="toast-notification" class="hidden opacity-0 transform translate-y-4 absolute bottom-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg"></div>
 
     <script type="module">
@@ -111,16 +107,27 @@
             boardImage.src = canvas.toDataURL('image/png');
         }
 
-        function handleBoardTap() {
+        async function handleBoardTap() {
             if (!settings.shortcutName) {
                 showToast('Silakan isi nama Pintasan di pengaturan.');
                 return;
             }
-            const base64Image = canvas.toDataURL('image/png');
-            const encodedShortcutName = encodeURIComponent(settings.shortcutName);
-            // FIX: URL diubah ke format yang benar untuk MENJALANKAN Pintasan dengan input data
-            const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}&input=text&text=${base64Image}`;
-            window.location.href = shortcutUrl;
+            
+            try {
+                // Langkah 1: Salin data gambar ke Papan Klip
+                const base64Image = canvas.toDataURL('image/png');
+                await navigator.clipboard.writeText(base64Image);
+                showToast('Data disalin, membuka Pintasan...');
+
+                // Langkah 2: Segera lakukan redirect untuk menjalankan Pintasan
+                const encodedShortcutName = encodeURIComponent(settings.shortcutName);
+                const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}`;
+                window.location.href = shortcutUrl;
+
+            } catch (err) {
+                console.error('Proses gagal:', err);
+                showToast('Gagal menyalin atau membuka Pintasan.');
+            }
         }
         
         function saveSettings() {
@@ -145,7 +152,6 @@
             }, 3000);
         }
 
-        // --- Pemasangan Event Listener ---
         onValue(gameRef, (snapshot) => {
             const finalBoard = Array(9).fill(null);
             if (snapshot.exists()) {
@@ -161,12 +167,12 @@
             }
             renderBoardToCanvas(finalBoard);
         });
+
         settingsBtn.addEventListener('click', () => settingsPanel.classList.remove('hidden'));
         saveSettingsBtn.addEventListener('click', saveSettings);
         settingsPanel.addEventListener('click', (e) => { if (e.target === settingsPanel) settingsPanel.classList.add('hidden'); });
         boardImage.addEventListener('click', handleBoardTap);
         
-        // --- Inisialisasi Aplikasi ---
         loadSettings();
     </script>
     <script> if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); } </script>
