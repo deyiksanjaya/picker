@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="images/icons/icon-180x180.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; -webkit-user-select: none; -ms-user-select: none; user-select: none; overflow: hidden; background-color: #F3F4F6; }
@@ -30,6 +30,10 @@
         }
         #board-image:active {
             transform: scale(0.97);
+        }
+        /* Style untuk notifikasi */
+        #notification {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
     </style>
 </head>
@@ -66,14 +70,18 @@
     </div>
     
     <div class="main-container">
-        <!-- pakai 1x1 transparan biar bisa diklik sejak awal -->
-        <img id="board-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Papan Permainan">
+        <img id="board-image" src="" alt="Papan Permainan">
     </div>
+
+    <!-- Elemen Notifikasi -->
+    <div id="notification" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-sm font-medium z-50 opacity-0 transform translate-y-4"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
         
+        // --- KONFIGURASI FIREBASE ANDA ---
+        // PENTING: Ganti dengan konfigurasi Firebase Anda sendiri
         const firebaseConfig = {
           apiKey: "AIzaSyBwCuf9-ASE4rAaF6KWjlwyZO9O8LMrXlc",
           authDomain: "tictactoeferdi.firebaseapp.com",
@@ -92,6 +100,7 @@
         const settingsPanel = document.getElementById('settings-panel');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const shortcutNameInput = document.getElementById('shortcut-name');
+        const notification = document.getElementById('notification'); // Ambil elemen notifikasi
 
         let settings = { shortcutName: '', imageFormat: 'square' };
         let latestBoardData = Array(9).fill(null);
@@ -138,7 +147,7 @@
                 canvasWidth = 420;
                 canvasHeight = 910;
                 boardSize = 420;
-            } else {
+            } else { // 'square'
                 canvasWidth = 512;
                 canvasHeight = 512;
                 boardSize = 512;
@@ -181,33 +190,44 @@
             });
         }
 
-        async function handleBoardTap() {
-            console.log("Board image clicked"); // debug log
+        // Fungsi baru untuk menampilkan notifikasi
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.remove('hidden', 'opacity-0', 'translate-y-4');
+            notification.classList.add('opacity-100', 'translate-y-0');
 
+            setTimeout(() => {
+                notification.classList.remove('opacity-100', 'translate-y-0');
+                notification.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 300);
+            }, 2500);
+        }
+
+        // Fungsi handleBoardTap yang diperbarui
+        async function handleBoardTap() {
             if (!settings.shortcutName) {
-                settingsBtn.click();
-                shortcutNameInput.focus();
+                showNotification('Harap atur Nama Pintasan terlebih dahulu.');
+                setTimeout(() => {
+                    settingsBtn.click();
+                    shortcutNameInput.focus();
+                }, 500); // Beri jeda agar notifikasi terlihat
                 return;
             }
             
             try {
                 generateOutputImageOnCanvas(latestBoardData, settings.imageFormat);
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-
-                if (navigator.clipboard && window.ClipboardItem) {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({ 'image/png': blob })
-                    ]);
-                } else {
-                    console.warn("Clipboard API untuk gambar tidak didukung di browser ini.");
-                }
-
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
                 const encodedShortcutName = encodeURIComponent(settings.shortcutName);
                 const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}`;
                 window.location.href = shortcutUrl;
-
             } catch (err) {
                 console.error('Proses gagal:', err);
+                showNotification('Gagal menyalin gambar atau menjalankan pintasan.');
             }
         }
         
