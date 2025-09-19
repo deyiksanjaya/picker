@@ -80,32 +80,28 @@
           projectId: "tictactoeferdi",
           storageBucket: "tictactoeferdi.appspot.com",
           messagingSenderId: "868814364652",
-          appId: "1:868814364652:web:1b749bad16d092b74eaac9"
+          appId: "1:868814364642:web:1b749bad16d092b74eaac9"
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const gameRef = ref(db, 'magic-game-state');
 
-        // --- Elemen DOM ---
         const boardImage = document.getElementById('board-image');
         const settingsBtn = document.getElementById('settings-btn');
         const settingsPanel = document.getElementById('settings-panel');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const shortcutNameInput = document.getElementById('shortcut-name');
 
-        // --- Variabel Global ---
         let settings = { shortcutName: '', imageFormat: 'square' };
         let latestBoardData = Array(9).fill(null);
-        const canvas = document.createElement('canvas'); // Kanvas serbaguna
+        const canvas = document.createElement('canvas');
         
-        // Fungsi ini HANYA untuk menggambar papan persegi di layar
         function renderDisplayBoard(boardData) {
             const ctx = canvas.getContext('2d');
             const size = 512;
             canvas.width = size;
             canvas.height = size;
             
-            // Menggambar papan (logika ini tetap sama)
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, size, size);
             const cellSize = size / 3;
@@ -130,12 +126,11 @@
                 ctx.fillText(value, x, y);
             });
             
-            // Mengatur gambar di layar
             boardImage.src = canvas.toDataURL('image/png');
         }
-
-        // Fungsi ini HANYA untuk membuat gambar output sesuai pengaturan
-        function generateOutputBase64(boardData, format) {
+        
+        // Fungsi ini hanya menggambar di kanvas, tidak mengembalikan apa-apa
+        function generateOutputImageOnCanvas(boardData, format) {
             const ctx = canvas.getContext('2d');
             let boardSize, canvasWidth, canvasHeight;
 
@@ -158,7 +153,6 @@
             const startX = (canvas.width - boardSize) / 2;
             const startY = (canvas.height - boardSize) / 2;
             
-            // Logika menggambar papan (diadaptasi untuk posisi dan ukuran)
             const cellSize = boardSize / 3;
             const lineThickness = 6;
             ctx.strokeStyle = '#CBD5E1';
@@ -185,8 +179,6 @@
                 ctx.fillStyle = value === 'X' ? '#EF4444' : '#3B82F6';
                 ctx.fillText(value, x, y);
             });
-            
-            return canvas.toDataURL('image/png');
         }
 
 
@@ -198,17 +190,25 @@
             }
             
             try {
-                // Hasilkan gambar output sesuai pengaturan saat ini
-                const base64Image = generateOutputBase64(latestBoardData, settings.imageFormat);
+                // 1. Siapkan kanvas dengan gambar output yang benar
+                generateOutputImageOnCanvas(latestBoardData, settings.imageFormat);
                 
-                await navigator.clipboard.writeText(base64Image);
+                // 2. Ubah kanvas menjadi Blob (data gambar mentah)
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                
+                // 3. Salin Blob gambar ke papan klip
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
 
+                // 4. Redirect untuk menjalankan Pintasan
                 const encodedShortcutName = encodeURIComponent(settings.shortcutName);
                 const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}`;
                 window.location.href = shortcutUrl;
 
             } catch (err) {
                 console.error('Proses gagal:', err);
+                // Di sini kita bisa menambahkan notifikasi jika diperlukan, tapi sekarang kita hilangkan
             }
         }
         
@@ -230,7 +230,6 @@
             document.querySelector(`input[name="image-format"][value="${settings.imageFormat || 'square'}"]`).checked = true;
         }
 
-        // Listener utama untuk data dari Firebase
         onValue(gameRef, (snapshot) => {
             const finalBoard = Array(9).fill(null);
             if (snapshot.exists()) {
@@ -244,21 +243,17 @@
                     }
                 }
             }
-            // Simpan data terbaru
             latestBoardData = [...finalBoard];
-            // Render HANYA tampilan di layar
             renderDisplayBoard(finalBoard);
         });
 
-        // Event Listeners untuk UI
         settingsBtn.addEventListener('click', () => settingsPanel.classList.remove('hidden'));
         saveSettingsBtn.addEventListener('click', saveSettings);
         settingsPanel.addEventListener('click', (e) => { if (e.target === settingsPanel) settingsPanel.classList.add('hidden'); });
         boardImage.addEventListener('click', handleBoardTap);
         
-        // Inisialisasi
         loadSettings();
     </script>
-    <script> if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.service-worker.register('/sw.js'); }); } </script>
+    <script> if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); } </script>
 </body>
 </html>
