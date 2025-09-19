@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- META TAG BARU: Mencegah zoom pada perangkat mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tampilan Papan Realtime</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +13,18 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            /* CSS BARU: Mencegah teks di-highlight/dipilih */
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none;
+            /* Pastikan tidak ada scroll bar */
+            overflow: hidden;
+        }
+        /* Memberi efek visual saat papan ditekan */
+        #board-display:active {
+            transform: scale(0.98);
+            filter: brightness(1.1);
+            transition: transform 0.1s, filter 0.1s;
         }
         .board-display {
             display: grid;
@@ -20,55 +33,24 @@
             border: none;
             background-color: #000;
             padding: 2px;
+            cursor: pointer; /* Menandakan elemen ini interaktif */
+            transition: transform 0.2s, filter 0.2s;
         }
-        .cell-display {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3.5rem;
-            font-weight: bold;
-            color: #E5E7EB;
-            border-right: 4px solid #4B5563;
-            border-bottom: 4px solid #4B5563;
-        }
+        .cell-display { width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; font-size: 3.5rem; font-weight: bold; color: #E5E7EB; border-right: 4px solid #4B5563; border-bottom: 4px solid #4B5563; }
         .cell-display:nth-child(3n) { border-right: none; }
         .cell-display:nth-child(n+7) { border-bottom: none; }
-
         @media (max-width: 400px) {
-            .board-display {
-                grid-template-columns: repeat(3, 80px);
-                grid-template-rows: repeat(3, 80px);
-            }
-            .cell-display {
-                width: 80px;
-                height: 80px;
-                font-size: 2.5rem;
-            }
+            .board-display { grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(3, 80px); }
+            .cell-display { width: 80px; height: 80px; font-size: 2.5rem; }
         }
     </style>
 </head>
-<body class="bg-black text-gray-300 flex flex-col items-center justify-center min-h-screen p-4">
-
-    <div class="flex flex-col items-center">
-        <h1 class="text-3xl font-bold mb-6 text-white">Status Papan Permainan</h1>
-    
-        <div id="board-display" class="board-display mb-8">
-            <div class="cell-display" data-index="0"></div>
-            <div class="cell-display" data-index="1"></div>
-            <div class="cell-display" data-index="2"></div>
-            <div class="cell-display" data-index="3"></div>
-            <div class="cell-display" data-index="4"></div>
-            <div class="cell-display" data-index="5"></div>
-            <div class="cell-display" data-index="6"></div>
-            <div class="cell-display" data-index="7"></div>
-            <div class="cell-display" data-index="8"></div>
-        </div>
-    
-        <button id="save-png-btn" class="px-6 py-2 bg-transparent border border-gray-600 text-gray-400 font-semibold rounded-lg hover:bg-gray-900 hover:text-white transition-colors">
-            Simpan sebagai PNG
-        </button>
+<body class="bg-black text-gray-300 flex items-center justify-center min-h-screen">
+    <!-- Judul dan tombol simpan telah dihapus dari sini -->
+    <div id="board-display" class="board-display">
+        <div class="cell-display" data-index="0"></div><div class="cell-display" data-index="1"></div><div class="cell-display" data-index="2"></div>
+        <div class="cell-display" data-index="3"></div><div class="cell-display" data-index="4"></div><div class="cell-display" data-index="5"></div>
+        <div class="cell-display" data-index="6"></div><div class="cell-display" data-index="7"></div><div class="cell-display" data-index="8"></div>
     </div>
 
     <script type="module">
@@ -84,58 +66,75 @@
           messagingSenderId: "868814364652",
           appId: "1:868814364652:web:1b749bad16d092b74eaac9"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const gameRef = ref(db, 'magic-game-state');
 
         const cells = document.querySelectorAll('.cell-display');
         const boardDisplayDiv = document.getElementById('board-display');
-        const savePngBtn = document.getElementById('save-png-btn');
 
+        function renderBoard(boardData) {
+            boardData.forEach((value, index) => {
+                if (cells[index]) {
+                    cells[index].textContent = value || '';
+                }
+            });
+        }
+        
         onValue(gameRef, (snapshot) => {
-            // Langkah 1: Periksa apakah data ada di Firebase
+            const finalBoard = Array(9).fill(null);
             if (snapshot.exists()) {
                 const gameState = snapshot.val();
-                
-                // Langkah 2: Lakukan validasi yang SANGAT KETAT pada data yang diterima
-                // Data dianggap valid HANYA JIKA:
-                // - gameState adalah sebuah objek (bukan null, string, atau angka)
-                // - gameState memiliki properti 'board'
-                // - Properti 'board' tersebut adalah sebuah array dengan panjang persis 9
-                if (gameState && typeof gameState === 'object' && Array.isArray(gameState.board) && gameState.board.length === 9) {
-                    // Jika semua validasi lolos, baru update tampilan
-                    const board = gameState.board;
-                    board.forEach((value, index) => {
-                        if (cells[index]) {
-                            cells[index].textContent = value || '';
+                if (gameState && gameState.board) {
+                    const receivedBoardData = gameState.board;
+                    for (const index in receivedBoardData) {
+                        const value = receivedBoardData[index];
+                        const indexNum = parseInt(index, 10);
+                        if (!isNaN(indexNum) && indexNum >= 0 && indexNum < 9) {
+                            finalBoard[indexNum] = value;
                         }
-                    });
-                } else {
-                    // Jika data ada tapi formatnya tidak sempurna, JANGAN LAKUKAN APA-APA.
-                    // Cukup catat di console untuk debugging dan tunggu update data valid berikutnya.
-                    // Ini mencegah error dan papan yang berkedip (flickering).
-                    console.warn("Menerima data dengan format tidak sempurna, menunggu update berikutnya.", gameState);
+                    }
                 }
-
-            } else {
-                // Jika node 'magic-game-state' benar-benar tidak ada, baru kita kosongkan papan.
-                cells.forEach(cell => cell.textContent = '');
-                console.log("Node 'magic-game-state' tidak ditemukan. Papan dikosongkan.");
             }
+            renderBoard(finalBoard);
         });
 
-        savePngBtn.addEventListener('click', () => {
-            html2canvas(boardDisplayDiv, {
-                backgroundColor: '#000000',
-                useCORS: true
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'papan-tictactoe.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            });
+        // --- LOGIKA BARU: TAP AND HOLD UNTUK MENYIMPAN GAMBAR ---
+        
+        let pressTimer = null;
+
+        // Fungsi untuk menyimpan gambar, dipisahkan agar rapi
+        function saveBoardAsPNG() {
+            html2canvas(boardDisplayDiv, { backgroundColor: '#000000', useCORS: true })
+                .then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'papan-permainan.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+        }
+
+        // Fungsi untuk membatalkan timer jika sentuhan dilepas terlalu cepat
+        const cancelPress = () => {
+            clearTimeout(pressTimer);
+        };
+
+        // Event listener untuk mouse (desktop)
+        boardDisplayDiv.addEventListener('mousedown', (e) => {
+            // Hanya aktif untuk klik kiri
+            if (e.button !== 0) return;
+            pressTimer = setTimeout(saveBoardAsPNG, 800); // Tahan selama 800ms
         });
+        boardDisplayDiv.addEventListener('mouseup', cancelPress);
+        boardDisplayDiv.addEventListener('mouseleave', cancelPress); // Batal jika mouse keluar dari board
+
+        // Event listener untuk sentuhan (mobile)
+        boardDisplayDiv.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Mencegah menu konteks muncul di mobile
+            pressTimer = setTimeout(saveBoardAsPNG, 800);
+        });
+        boardDisplayDiv.addEventListener('touchend', cancelPress);
+        boardDisplayDiv.addEventListener('touchmove', cancelPress); // Batal jika jari bergeser
 
     </script>
 </body>
