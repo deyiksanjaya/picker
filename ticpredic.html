@@ -81,7 +81,6 @@
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
         
         // --- KONFIGURASI FIREBASE ANDA ---
-        // PENTING: Ganti dengan konfigurasi Firebase Anda sendiri
         const firebaseConfig = {
           apiKey: "AIzaSyBwCuf9-ASE4rAaF6KWjlwyZO9O8LMrXlc",
           authDomain: "tictactoeferdi.firebaseapp.com",
@@ -100,7 +99,7 @@
         const settingsPanel = document.getElementById('settings-panel');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const shortcutNameInput = document.getElementById('shortcut-name');
-        const notification = document.getElementById('notification'); // Ambil elemen notifikasi
+        const notification = document.getElementById('notification');
 
         let settings = { shortcutName: '', imageFormat: 'square' };
         let latestBoardData = Array(9).fill(null);
@@ -190,7 +189,6 @@
             });
         }
 
-        // Fungsi baru untuk menampilkan notifikasi
         function showNotification(message) {
             notification.textContent = message;
             notification.classList.remove('hidden', 'opacity-0', 'translate-y-4');
@@ -205,29 +203,53 @@
             }, 2500);
         }
 
-        // Fungsi handleBoardTap yang diperbarui
+        // --- FUNGSI UTAMA: Diperbarui dengan penanganan kesalahan yang lebih baik ---
         async function handleBoardTap() {
             if (!settings.shortcutName) {
                 showNotification('Harap atur Nama Pintasan terlebih dahulu.');
                 setTimeout(() => {
                     settingsBtn.click();
                     shortcutNameInput.focus();
-                }, 500); // Beri jeda agar notifikasi terlihat
+                }, 500);
                 return;
+            }
+
+            // Periksa apakah API yang diperlukan didukung oleh browser
+            if (!navigator.clipboard || !window.ClipboardItem) {
+                 showNotification('Browser Anda tidak mendukung penyalinan gambar.');
+                 console.error('Clipboard API atau ClipboardItem tidak didukung.');
+                 return;
             }
             
             try {
+                // Hasilkan gambar di canvas
                 generateOutputImageOnCanvas(latestBoardData, settings.imageFormat);
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                await navigator.clipboard.write([
-                    new ClipboardItem({ 'image/png': blob })
-                ]);
-                const encodedShortcutName = encodeURIComponent(settings.shortcutName);
-                const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}`;
-                window.location.href = shortcutUrl;
+
+                // Coba salin gambar ke clipboard
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                } catch (copyError) {
+                    console.error('Gagal menyalin gambar:', copyError);
+                    showNotification('Gagal menyalin gambar ke clipboard.');
+                    return; // Hentikan proses jika penyalinan gagal
+                }
+
+                // Coba jalankan pintasan setelah berhasil menyalin
+                try {
+                    const encodedShortcutName = encodeURIComponent(settings.shortcutName);
+                    const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}`;
+                    window.location.href = shortcutUrl;
+                } catch (shortcutError) {
+                    console.error('Gagal menjalankan pintasan:', shortcutError);
+                    showNotification('Gagal menjalankan pintasan. Pastikan nama sudah benar.');
+                }
+
             } catch (err) {
-                console.error('Proses gagal:', err);
-                showNotification('Gagal menyalin gambar atau menjalankan pintasan.');
+                console.error('Proses umum gagal:', err);
+                showNotification('Terjadi kesalahan yang tidak terduga.');
             }
         }
         
