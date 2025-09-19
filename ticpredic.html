@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="images/icons/icon-180x180.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; -webkit-user-select: none; -ms-user-select: none; user-select: none; overflow: hidden; background-color: #F3F4F6; }
@@ -37,7 +37,7 @@
 
     <!-- Tombol Pengaturan -->
     <button id="settings-btn" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md">
-        <svg xmlns="http://www.w.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </button>
 
     <!-- Panel Pengaturan -->
@@ -45,7 +45,7 @@
         <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4">Pengaturan Aksi Ketukan</h2>
             <div class="space-y-4">
-                <div><input type="radio" id="action-download" name="action-type" value="download" class="mr-2"><label for="action-download" class="text-gray-700">Unduh Gambar & Buka Foto</label></div>
+                <div><input type="radio" id="action-download" name="action-type" value="download" class="mr-2"><label for="action-download" class="text-gray-700">Simpan & Buka Foto</label></div>
                 <div><input type="radio" id="action-shortcut" name="action-type" value="shortcut" class="mr-2"><label for="action-shortcut" class="text-gray-700">Kirim ke Pintasan</label></div>
                 <input type="text" id="shortcut-name" placeholder="Nama Pintasan..." class="mt-2 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100">
             </div>
@@ -83,35 +83,45 @@
         const settingsPanel = document.getElementById('settings-panel');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const shortcutNameInput = document.getElementById('shortcut-name');
-        const actionRadios = document.querySelectorAll('input[name="action-type"]');
         const toast = document.getElementById('toast-notification');
 
         let settings = { actionType: 'download', shortcutName: '' };
+        let firstTapInPhotoMode = false;
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
         function renderBoardToCanvas(boardData) {
-            const size = 512;
+            // Fungsi untuk menggambar kondisi papan ke canvas tersembunyi
+            const size = 512; // Resolusi HD untuk gambar
             canvas.width = size;
             canvas.height = size;
             const cellSize = size / 3;
             const lineThickness = 6;
-            
+
+            // 1. Gambar latar belakang putih
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, size, size);
-            ctx.strokeStyle = '#E5E7EB';
+
+            // 2. Gambar garis grid (FIX: Warna dibuat lebih gelap agar terlihat)
+            ctx.strokeStyle = '#CBD5E1'; // Warna abu-abu yang lebih kontras
             ctx.lineWidth = lineThickness;
+            ctx.beginPath(); // Mulai path sekali saja untuk semua garis
             for (let i = 1; i < 3; i++) {
-                ctx.beginPath();
-                ctx.moveTo(i * cellSize, 0); ctx.lineTo(i * cellSize, size);
-                ctx.moveTo(0, i * cellSize); ctx.lineTo(size, i * cellSize);
-                ctx.stroke();
+                // Garis vertikal
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, size);
+                // Garis horizontal
+                ctx.moveTo(0, i * cellSize);
+                ctx.lineTo(size, i * cellSize);
             }
+            ctx.stroke(); // Gambar semua garis dalam satu panggilan
+
+            // 3. Gambar simbol X dan O
             ctx.font = `bold ${cellSize * 0.7}px Poppins`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             boardData.forEach((value, index) => {
-                if (!value) return;
+                if (!value) return; // Lewati sel kosong
                 const row = Math.floor(index / 3);
                 const col = index % 3;
                 const x = col * cellSize + cellSize / 2;
@@ -119,29 +129,45 @@
                 ctx.fillStyle = value === 'X' ? '#EF4444' : '#3B82F6';
                 ctx.fillText(value, x, y);
             });
+            
+            // 4. Atur hasil canvas sebagai sumber gambar yang terlihat
             boardImage.src = canvas.toDataURL('image/png');
         }
 
-        function showToast(message) {
-            toast.textContent = message;
-            toast.classList.remove('hidden', 'opacity-0', 'translate-y-4');
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-4');
-                setTimeout(() => toast.classList.add('hidden'), 300);
-            }, 2500);
+        function dataURLtoFile(dataurl, filename) {
+            let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], filename, {type:mime});
         }
 
-        function handleBoardTap() {
+        async function handleBoardTap() {
             if (settings.actionType === 'download') {
-                const randomNum = Math.floor(1000 + Math.random() * 9000);
-                const filename = `IMG_${randomNum}.png`;
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                setTimeout(() => { window.location.href = 'photos-redirect://'; }, 150);
-            } 
-            else if (settings.actionType === 'shortcut') {
+                if (!firstTapInPhotoMode) {
+                    try {
+                        const file = dataURLtoFile(canvas.toDataURL('image/png'), 'board-image.png');
+                        if (navigator.share && navigator.canShare({ files: [file] })) {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Catatan Papan',
+                                text: 'Gambar dari papan catatan.'
+                            });
+                            showToast('Gambar dibagikan. Ketuk lagi untuk buka Foto.');
+                            firstTapInPhotoMode = true;
+                        } else {
+                            showToast('Gunakan menu browser untuk menyimpan gambar.');
+                        }
+                    } catch (error) {
+                        console.log('Share dibatalkan oleh pengguna.', error);
+                        firstTapInPhotoMode = false; 
+                    }
+                } else {
+                    window.location.href = 'photos-redirect://';
+                    firstTapInPhotoMode = false;
+                }
+            } else if (settings.actionType === 'shortcut') {
                 if (!settings.shortcutName) {
                     showToast('Silakan isi nama Pintasan di pengaturan.');
                     return;
@@ -153,20 +179,31 @@
             }
         }
         
-        function loadSettings() {
-            const savedSettings = JSON.parse(localStorage.getItem('appSettings'));
-            if (savedSettings) settings = savedSettings;
-            document.querySelector(`input[name="action-type"][value="${settings.actionType}"]`).checked = true;
-            shortcutNameInput.value = settings.shortcutName;
-            toggleShortcutInput();
-        }
-
         function saveSettings() {
             settings.actionType = document.querySelector('input[name="action-type"]:checked').value;
             settings.shortcutName = shortcutNameInput.value.trim();
             localStorage.setItem('appSettings', JSON.stringify(settings));
             settingsPanel.classList.add('hidden');
             showToast('Pengaturan disimpan.');
+            firstTapInPhotoMode = false;
+        }
+
+        function loadSettings() {
+            const savedSettings = JSON.parse(localStorage.getItem('appSettings'));
+            if (savedSettings) settings = savedSettings;
+            document.querySelector(`input[name="action-type"][value="${settings.actionType}"]`).checked = true;
+            shortcutNameInput.value = settings.shortcutName;
+            toggleShortcutInput();
+            firstTapInPhotoMode = false;
+        }
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.remove('hidden', 'opacity-0', 'translate-y-4');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
         }
 
         function toggleShortcutInput() {
@@ -188,11 +225,10 @@
             }
             renderBoardToCanvas(finalBoard);
         });
-
         settingsBtn.addEventListener('click', () => settingsPanel.classList.remove('hidden'));
         saveSettingsBtn.addEventListener('click', saveSettings);
         settingsPanel.addEventListener('click', (e) => { if (e.target === settingsPanel) settingsPanel.classList.add('hidden'); });
-        actionRadios.forEach(radio => radio.addEventListener('change', toggleShortcutInput));
+        document.querySelectorAll('input[name="action-type"]').forEach(radio => radio.addEventListener('change', toggleShortcutInput));
         boardImage.addEventListener('click', handleBoardTap);
         
         loadSettings();
