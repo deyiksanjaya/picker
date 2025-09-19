@@ -2,61 +2,51 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- META TAG BARU: Mencegah zoom pada perangkat mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tampilan Papan Realtime</title>
+    <title>Papan Skor</title>
+
+    <!-- ### PWA META TAGS BARU ### -->
+
+    <!-- Tema Warna Browser (Android) -->
+    <meta name="theme-color" content="#000000"/>
+
+    <!-- Link ke Manifest File -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Meta Tags untuk Apple/iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Papan Skor">
+    <link rel="apple-touch-icon" href="images/icons/icon-180x180.png">
+
+    <!-- ### AKHIR DARI PWA META TAGS ### -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            /* CSS BARU: Mencegah teks di-highlight/dipilih */
-            -webkit-user-select: none; /* Safari */
-            -ms-user-select: none; /* IE 10+ */
+            -webkit-user-select: none;
+            -ms-user-select: none;
             user-select: none;
-            /* Pastikan tidak ada scroll bar */
             overflow: hidden;
         }
-        /* Memberi efek visual saat papan ditekan */
-        #board-display:active {
-            transform: scale(0.98);
-            filter: brightness(1.1);
-            transition: transform 0.1s, filter 0.1s;
-        }
-        .board-display {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            border: none;
-            background-color: #000;
-            padding: 2px;
-            cursor: pointer; /* Menandakan elemen ini interaktif */
-            transition: transform 0.2s, filter 0.2s;
-        }
-        .cell-display { width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; font-size: 3.5rem; font-weight: bold; color: #E5E7EB; border-right: 4px solid #4B5563; border-bottom: 4px solid #4B5563; }
-        .cell-display:nth-child(3n) { border-right: none; }
-        .cell-display:nth-child(n+7) { border-bottom: none; }
-        @media (max-width: 400px) {
-            .board-display { grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(3, 80px); }
-            .cell-display { width: 80px; height: 80px; font-size: 2.5rem; }
+        #board-image {
+            -webkit-user-drag: none;
         }
     </style>
 </head>
 <body class="bg-black text-gray-300 flex items-center justify-center min-h-screen">
-    <!-- Judul dan tombol simpan telah dihapus dari sini -->
-    <div id="board-display" class="board-display">
-        <div class="cell-display" data-index="0"></div><div class="cell-display" data-index="1"></div><div class="cell-display" data-index="2"></div>
-        <div class="cell-display" data-index="3"></div><div class="cell-display" data-index="4"></div><div class="cell-display" data-index="5"></div>
-        <div class="cell-display" data-index="6"></div><div class="cell-display" data-index="7"></div><div class="cell-display" data-index="8"></div>
-    </div>
+
+    <img id="board-image" alt="Papan Permainan Tic-Tac-Toe" class="w-[306px] h-[306px] md:w-[306px] md:h-[306px]">
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
 
+        // ... (Kode Firebase dan Canvas Anda yang sudah ada tidak berubah)
         const firebaseConfig = {
           apiKey: "AIzaSyBwCuf9-ASE4rAaF6KWjlwyZO9O8LMrXlc",
           authDomain: "tictactoeferdi.firebaseapp.com",
@@ -70,15 +60,48 @@
         const db = getDatabase(app);
         const gameRef = ref(db, 'magic-game-state');
 
-        const cells = document.querySelectorAll('.cell-display');
-        const boardDisplayDiv = document.getElementById('board-display');
+        const boardImage = document.getElementById('board-image');
+        const canvas = document.createElement('canvas');
+        const CELL_SIZE = 100;
+        const LINE_WIDTH = 4;
+        const BOARD_SIZE = (CELL_SIZE * 3) + (LINE_WIDTH * 2);
+        canvas.width = BOARD_SIZE;
+        canvas.height = BOARD_SIZE;
+        const ctx = canvas.getContext('2d');
 
-        function renderBoard(boardData) {
+        function updateBoardImage(boardData) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#4B5563';
+            ctx.lineWidth = LINE_WIDTH;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(CELL_SIZE + (LINE_WIDTH / 2), 0);
+            ctx.lineTo(CELL_SIZE + (LINE_WIDTH / 2), BOARD_SIZE);
+            ctx.moveTo(CELL_SIZE * 2 + (LINE_WIDTH * 1.5), 0);
+            ctx.lineTo(CELL_SIZE * 2 + (LINE_WIDTH * 1.5), BOARD_SIZE);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, CELL_SIZE + (LINE_WIDTH / 2));
+            ctx.lineTo(BOARD_SIZE, CELL_SIZE + (LINE_WIDTH / 2));
+            ctx.moveTo(0, CELL_SIZE * 2 + (LINE_WIDTH * 1.5));
+            ctx.lineTo(BOARD_SIZE, CELL_SIZE * 2 + (LINE_WIDTH * 1.5));
+            ctx.stroke();
+            ctx.fillStyle = '#E5E7EB';
+            ctx.font = 'bold 3.5rem Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
             boardData.forEach((value, index) => {
-                if (cells[index]) {
-                    cells[index].textContent = value || '';
+                if (value) {
+                    const row = Math.floor(index / 3);
+                    const col = index % 3;
+                    const x = col * (CELL_SIZE + LINE_WIDTH) + (CELL_SIZE / 2);
+                    const y = row * (CELL_SIZE + LINE_WIDTH) + (CELL_SIZE / 2);
+                    ctx.fillText(value, x, y);
                 }
             });
+            boardImage.src = canvas.toDataURL('image/png');
         }
         
         onValue(gameRef, (snapshot) => {
@@ -96,46 +119,24 @@
                     }
                 }
             }
-            renderBoard(finalBoard);
+            updateBoardImage(finalBoard);
         });
 
-        // --- LOGIKA BARU: TAP AND HOLD UNTUK MENYIMPAN GAMBAR ---
-        
-        let pressTimer = null;
-
-        // Fungsi untuk menyimpan gambar, dipisahkan agar rapi
-        function saveBoardAsPNG() {
-            html2canvas(boardDisplayDiv, { backgroundColor: '#000000', useCORS: true })
-                .then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = 'papan-permainan.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                });
+    </script>
+    
+    <!-- ### KODE BARU: Mendaftarkan Service Worker ### -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
         }
-
-        // Fungsi untuk membatalkan timer jika sentuhan dilepas terlalu cepat
-        const cancelPress = () => {
-            clearTimeout(pressTimer);
-        };
-
-        // Event listener untuk mouse (desktop)
-        boardDisplayDiv.addEventListener('mousedown', (e) => {
-            // Hanya aktif untuk klik kiri
-            if (e.button !== 0) return;
-            pressTimer = setTimeout(saveBoardAsPNG, 800); // Tahan selama 800ms
-        });
-        boardDisplayDiv.addEventListener('mouseup', cancelPress);
-        boardDisplayDiv.addEventListener('mouseleave', cancelPress); // Batal jika mouse keluar dari board
-
-        // Event listener untuk sentuhan (mobile)
-        boardDisplayDiv.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Mencegah menu konteks muncul di mobile
-            pressTimer = setTimeout(saveBoardAsPNG, 800);
-        });
-        boardDisplayDiv.addEventListener('touchend', cancelPress);
-        boardDisplayDiv.addEventListener('touchmove', cancelPress); // Batal jika jari bergeser
-
     </script>
 </body>
 </html>
