@@ -36,16 +36,31 @@
 <body class="flex items-center justify-center min-h-screen">
 
     <button id="settings-btn" class="absolute top-5 right-5 z-20 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </button>
 
     <div id="settings-panel" class="hidden absolute inset-0 z-10 bg-black/40 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Pengaturan Pintasan</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Pengaturan</h2>
             <div class="space-y-2">
                 <label for="shortcut-name" class="text-gray-700 font-medium">Nama Pintasan:</label>
-                <input type="text" id="shortcut-name" placeholder="Contoh: ProsesGambar" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="shortcut-name" placeholder="Nama Pintasan Anda" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
             </div>
+            
+            <div class="mt-4">
+                <label class="text-gray-700 font-medium">Format Gambar:</label>
+                <div class="mt-2 space-y-2">
+                    <div class="flex items-center">
+                        <input type="radio" id="format-square" name="image-format" value="square" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="format-square" class="ml-3 block text-sm text-gray-900">Square</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="format-portrait" name="image-format" value="portrait" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="format-portrait" class="ml-3 block text-sm text-gray-900">Portrait</label>
+                    </div>
+                </div>
+            </div>
+
             <div class="mt-6 flex justify-end"><button id="save-settings-btn" class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Simpan</button></div>
         </div>
     </div>
@@ -53,8 +68,6 @@
     <div class="main-container">
         <img id="board-image" src="" alt="Papan Permainan">
     </div>
-
-    <div id="toast-notification" class="hidden opacity-0 transform translate-y-4 absolute bottom-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
@@ -78,29 +91,51 @@
         const settingsPanel = document.getElementById('settings-panel');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const shortcutNameInput = document.getElementById('shortcut-name');
-        const toast = document.getElementById('toast-notification');
 
-        let settings = { shortcutName: '' };
+        let settings = { shortcutName: '', imageFormat: 'square' };
         const canvas = document.createElement('canvas');
         
         function renderBoardToCanvas(boardData) {
             const ctx = canvas.getContext('2d');
-            const size = 512; canvas.width = size; canvas.height = size;
-            const cellSize = size / 3; const lineThickness = 6;
-            ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, size, size);
-            ctx.strokeStyle = '#CBD5E1'; ctx.lineWidth = lineThickness;
+            const boardSize = 512;
+
+            if (settings.imageFormat === 'portrait') {
+                canvas.width = boardSize;
+                canvas.height = Math.round(boardSize * (16 / 9));
+            } else {
+                canvas.width = boardSize;
+                canvas.height = boardSize;
+            }
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const startX = (canvas.width - boardSize) / 2;
+            const startY = (canvas.height - boardSize) / 2;
+
+            const cellSize = boardSize / 3;
+            const lineThickness = 6;
+            ctx.strokeStyle = '#CBD5E1';
+            ctx.lineWidth = lineThickness;
+            
             ctx.beginPath();
             for (let i = 1; i < 3; i++) {
-                ctx.moveTo(i * cellSize, 0); ctx.lineTo(i * cellSize, size);
-                ctx.moveTo(0, i * cellSize); ctx.lineTo(size, i * cellSize);
+                ctx.moveTo(startX + i * cellSize, startY);
+                ctx.lineTo(startX + i * cellSize, startY + boardSize);
+                ctx.moveTo(startX, startY + i * cellSize);
+                ctx.lineTo(startX + boardSize, startY + i * cellSize);
             }
             ctx.stroke();
+
             ctx.font = `bold ${cellSize * 0.7}px Poppins`;
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
             boardData.forEach((value, index) => {
                 if (!value) return;
-                const row = Math.floor(index / 3); const col = index % 3;
-                const x = col * cellSize + cellSize / 2; const y = row * cellSize + cellSize / 2;
+                const row = Math.floor(index / 3);
+                const col = index % 3;
+                const x = startX + col * cellSize + cellSize / 2;
+                const y = startY + row * cellSize + cellSize / 2;
                 ctx.fillStyle = value === 'X' ? '#EF4444' : '#3B82F6';
                 ctx.fillText(value, x, y);
             });
@@ -109,47 +144,55 @@
 
         async function handleBoardTap() {
             if (!settings.shortcutName) {
-                showToast('Silakan isi nama Pintasan di pengaturan.');
+                settingsBtn.click();
+                shortcutNameInput.focus();
                 return;
             }
             
             try {
-                // Langkah 1: Salin data gambar ke Papan Klip
                 const base64Image = canvas.toDataURL('image/png');
                 await navigator.clipboard.writeText(base64Image);
-                showToast('Data disalin, membuka Pintasan...');
 
-                // Langkah 2: Segera lakukan redirect untuk menjalankan Pintasan
                 const encodedShortcutName = encodeURIComponent(settings.shortcutName);
                 const shortcutUrl = `shortcuts://run-shortcut?name=${encodedShortcutName}`;
                 window.location.href = shortcutUrl;
-
             } catch (err) {
                 console.error('Proses gagal:', err);
-                showToast('Gagal menyalin atau membuka Pintasan.');
             }
         }
         
         function saveSettings() {
             settings.shortcutName = shortcutNameInput.value.trim();
+            const selectedFormat = document.querySelector('input[name="image-format"]:checked').value;
+            settings.imageFormat = selectedFormat;
+            
             localStorage.setItem('appSettings', JSON.stringify(settings));
             settingsPanel.classList.add('hidden');
-            showToast('Pengaturan disimpan.');
+            // Re-render kanvas dengan format baru
+            onValue(gameRef, (snapshot) => {
+                const finalBoard = Array(9).fill(null);
+                 if (snapshot.exists()) {
+                    const gameState = snapshot.val();
+                    if (gameState && gameState.board) {
+                        const receivedBoardData = gameState.board;
+                        for (const index in receivedBoardData) {
+                            const value = receivedBoardData[index];
+                            const indexNum = parseInt(index, 10);
+                            if (!isNaN(indexNum) && indexNum >= 0 && indexNum < 9) finalBoard[indexNum] = value;
+                        }
+                    }
+                }
+                renderBoardToCanvas(finalBoard);
+            }, { onlyOnce: true }); // Ambil data sekali saja untuk re-render
         }
 
         function loadSettings() {
             const savedSettings = JSON.parse(localStorage.getItem('appSettings'));
-            if (savedSettings) settings = savedSettings;
+            if (savedSettings) {
+                settings = { ...settings, ...savedSettings };
+            }
             shortcutNameInput.value = settings.shortcutName;
-        }
-
-        function showToast(message) {
-            toast.textContent = message;
-            toast.classList.remove('hidden', 'opacity-0', 'translate-y-4');
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-4');
-                setTimeout(() => toast.classList.add('hidden'), 300);
-            }, 3000);
+            document.querySelector(`input[name="image-format"][value="${settings.imageFormat || 'square'}"]`).checked = true;
         }
 
         onValue(gameRef, (snapshot) => {
